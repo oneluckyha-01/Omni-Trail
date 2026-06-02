@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         万象 · Omni Trail
 // @namespace    https://new.rth1.xyz/omni-trail.js
-// @version      1.1.0
+// @version      1.2.1
 // @description  浏览器悬浮球全能助手：追剧进度管理、网页导航收藏、Markdown笔记、18套主题、Bangumi元数据刮削、WebDAV云同步
 // @author       u-luck & AI
 // @match        *://*/*
@@ -36,7 +36,7 @@
 	const KEY_MARKS = 'cine_marks_v1';
 	const KEY_QUOTE = 'cine_quote_v1';
 	// !! 同步更新下方 @version !!
-	const VERSION = '1.1.0';
+	const VERSION = '1.2.1';
 
 	const KEY_WEBDAV = 'cine_webdav_v1';
 	const DEFAULT_WEBDAV = {
@@ -886,6 +886,7 @@
 				transform: translateY(16px) scale(0.98);
 				transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
 				backdrop-filter: blur(var(--overlay-blur));
+				touch-action: manipulation;
 			}
 
 			/* 设置面板保持固定高度 */
@@ -904,14 +905,14 @@
 				background: color-mix(in srgb, var(--surface) calc(var(--panel-opacity) * 100%), transparent);
 				flex-shrink: 0;
 			}
-			.panel-head h2 { font-size: calc(var(--font-size) * 1.0); font-weight: 600; color: var(--text); letter-spacing: -0.02em; flex: 1; }
+			.panel-head h2 { font-size: var(--font-size); font-weight: 600; color: var(--text); letter-spacing: -0.02em; flex: 1; }
 			.head-logo {
 				width: 30px; height: 30px; color: var(--accent);
 				background: var(--accent-dim); border-radius: var(--radius-sm);
 				display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 			}
 			.head-logo svg { width: 16px; height: 16px; }
-			.panel-body { flex: 1; overflow-y: auto; padding: 14px 18px; overscroll-behavior: contain; }
+			.panel-body { flex: 1; overflow-y: auto; padding: 14px 18px; overscroll-behavior: contain; touch-action: pan-y; }
 			.main-panel > .panel-body { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
 			.panel-foot {
 				padding: 10px 18px; border-top: 1px solid var(--border);
@@ -1017,7 +1018,7 @@
 			.form-label.required::after { content: ' *'; color: #f87171; font-weight: bold; }
 
 			.toolbar { display: flex; gap: 5px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; width: 100%; flex-shrink: 0; }
-			.search-wrap { position: relative; flex: 1; min-width: 110px; max-width: none; }
+			.search-wrap { position: relative; flex: 1; min-width: 110px; }
 			.search-wrap svg { position: absolute; left: 7px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; color: var(--muted); pointer-events: none; }
 			.search-wrap input { padding-left: 26px; font-size: calc(var(--font-size) * 0.857); }
 			.filter-select { width: auto; min-width: 76px; font-size: calc(var(--font-size) * 0.786); padding: 6px 7px; flex-shrink: 0; }
@@ -1658,7 +1659,7 @@
 			}
 			.nav-search-actions button:hover { color: var(--accent); background: var(--accent-dim); }
 			.nav-search-actions button svg { width: 16px; height: 16px; }
-			.n-cat-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 0px; margin-bottom: 10px; padding-top: 2px; align-items: center; overflow-x: auto; width: 100%; flex-shrink: 0; }
+			.n-cat-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 0; margin-bottom: 10px; padding-top: 2px; align-items: center; overflow-x: auto; width: 100%; flex-shrink: 0; }
 			.n-cat-tab {
 				padding: 5px 12px; border-radius: var(--radius-sm);
 				font-size: calc(var(--font-size) * 0.857); font-weight: 500;
@@ -1761,18 +1762,19 @@
 			.notes-layout { display: flex; gap: 0; flex: 1; min-height: 0; overflow: hidden; }
 			.notes-tab-content.active { overflow: hidden; }
 			.notes-sidebar {
-				width: 220px; min-width: 200px; border-right: 1px solid var(--border);
+				width: 220px; min-width: 200px;
 				display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden;
 			}
 			.notes-sidebar-head {
 				padding: 8px 10px; border-bottom: 1px solid var(--border);
-				display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+				display: flex; gap: 6px; align-items: center; flex-shrink: 0; min-height: 42px;
 			}
 			.notes-sidebar-head .search-wrap { flex: 1; min-width: 0; }
 			.notes-sidebar-head .search-wrap input { font-size: calc(var(--font-size) * 0.786); padding: 7px 7px 7px 24px; }
 			.notes-sidebar-head .search-wrap svg { width: 11px; height: 11px; }
-			.notes-resizer { width: 0.5px; cursor: col-resize; background: var(--border); flex-shrink: 0; transition: background 0.15s; }
-			.notes-resizer:hover, .notes-resizer.active { background: var(--accent); }
+			.notes-resizer, .cal-resizer { width: 6px; cursor: col-resize; flex-shrink: 0; position: relative; background: transparent; }
+			.notes-resizer::after, .cal-resizer::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--border); transform: translateX(-50%); transition: background 0.15s, width 0.15s; }
+			.notes-resizer:hover::after, .notes-resizer.active::after, .cal-resizer:hover::after, .cal-resizer.active::after { background: var(--accent); width: 2px; }
 			.notes-list { flex: 1; overflow-y: auto; padding: 6px; }
 			.note-card {
 				padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer;
@@ -1805,11 +1807,11 @@
 				flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
 			}
 			.notes-editor-head {
-				padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+				padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 42px;
 			}
 			.notes-editor-head input {
 				width: 100%; border: none; background: transparent; outline: none;
-				font-size: calc(var(--font-size) * 1.0); font-weight: 600; color: var(--text);
+				font-size: var(--font-size); font-weight: 600; color: var(--text);
 				font-family: inherit;
 			}
 			.notes-toolbar {
@@ -1870,29 +1872,29 @@
 			.notes-empty svg { width: 40px; height: 40px; opacity: 0.3; }
 			@media (max-width: 600px) {
 				.notes-layout { flex-direction: column; height: auto; }
-				.notes-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 200px; }
+				.notes-sidebar { width: 100%; border-bottom: 1px solid var(--border); max-height: 200px; }
 			}
 
 			/* ── 时间工具 ── */
-			.timer-wrap { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+			.timer-wrap { display: flex; flex-direction: column; gap: 16px; padding: 16px; font-size: 16px; }
 			.timer-mode-tabs { display: flex; gap: 2px; background: var(--surface); border-radius: var(--radius-sm); padding: 3px; justify-content: center; width: fit-content; margin: 0 auto; }
 			.timer-mode-tab { padding: 6px 14px; border-radius: calc(var(--radius-sm) - 2px); border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: calc(var(--font-size) * 0.857); font-family: inherit; transition: all 0.15s; }
 			.timer-mode-tab.active { background: var(--accent-dim); color: var(--accent); }
 			.timer-mode-tab:hover { color: var(--text); }
-			.timer-display-area { text-align: center; padding: 20px 0; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-			.timer-clock-date { font-size: calc(var(--font-size) * 1.20); color: var(--muted); margin-bottom: 4px; }
-			.timer-clock-time { font-size: clamp(8.5em, min(12vw, 12vh), 6em); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 4px; }
-			.timer-digits { font-size: clamp(2em, min(10vw, 10vh), 5em); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 1px; }
-			.timer-phase-label { font-size: calc(var(--font-size) * 1.0); color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+			.timer-display-area { text-align: center; padding: 20px 0; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+			.timer-clock-date { font-size: calc(var(--font-size) * 1.20); color: var(--muted); margin-bottom: 30px; line-height: 1.4; }
+			.timer-clock-time { font-size: clamp(6em, min(12vw, 12vh), 8.5em); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 4px; white-space: nowrap; line-height: 1.5; }
+			.timer-digits { font-size: clamp(2em, min(10vw, 10vh), 5em); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 1px; line-height: 1.5; }
+			.timer-phase-label { font-size: var(--font-size); color: var(--accent); font-weight: 600; margin-bottom: 8px; }
 			.timer-preset-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
 			.timer-preset { padding: 5px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: calc(var(--font-size) * 0.857); font-family: inherit; transition: all 0.15s; }
 			.timer-preset:hover, .timer-preset.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-			.timer-quote { font-size: calc(var(--font-size) * 1.0); color: var(--muted); text-align: center; margin: 12px auto 0; max-width: 80%; line-height: 1.6; cursor: pointer; }
+			.timer-quote { font-size: var(--font-size); color: var(--muted); text-align: center; margin: 12px auto 0; max-width: 80%; line-height: 1.6; cursor: pointer; }
 			.timer-quote:hover { color: var(--text); }
 			.timer-quote-text { font-size: calc(var(--font-size) * 0.857); color: var(--text); font-style: italic; line-height: 1.6; }
 			.timer-quote-author { font-size: calc(var(--font-size) * 0.714); color: var(--muted); margin-top: 4px; }
 			.timer-custom-row { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 8px; }
-			.timer-controls { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-shrink: 0; }
+			.timer-controls { display: flex; gap: 8px; justify-content: center; margin-top: 20px; flex-shrink: 0; }
 			[data-tmode="stopwatch"] .timer-display-area { flex: 0; padding: 20px 0 0; }
 			.timer-btn { padding: 8px 24px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: calc(var(--font-size) * 0.929); font-family: inherit; transition: all 0.15s; }
 			.timer-btn:hover { background: var(--surface-hi); }
@@ -1915,11 +1917,8 @@
 			.stopwatch-lap { display: flex; justify-content: space-between; gap: 16px; padding: 4px 12px; font-size: calc(var(--font-size) * 0.857); color: var(--muted); font-variant-numeric: tabular-nums; }
 			.stopwatch-lap:nth-child(odd) { background: var(--surface); border-radius: var(--radius-sm); }
 			.cal-layout { display: flex; gap: 0; flex: 1; min-height: 0; }
-			.cal-left { flex: 1 1 50%; min-width: 0; overflow: hidden; display: flex; flex-direction: column; padding: 12px; position: relative; }
+			.cal-left { flex: 1 1 50%; min-width: 0; max-width: 400px; overflow: hidden; display: flex; flex-direction: column; padding: 12px; position: relative; }
 			.cal-right { flex: 1 1 50%; min-width: 0; padding: 12px 12px 12px 16px; display: flex; flex-direction: column; }
-			.cal-resizer { width: 6px; cursor: col-resize; flex-shrink: 0; position: relative; background: transparent; }
-			.cal-resizer::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--border); transform: translateX(-50%); transition: background 0.15s, width 0.15s; }
-			.cal-resizer:hover::after, .cal-resizer.active::after { background: var(--accent); width: 2px; }
 			.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; }
 			.cal-title-group { font-weight: 600; color: var(--text); font-size: calc(var(--font-size) * 0.929); display: flex; align-items: center; gap: 2px; }
 			.cal-clickable { cursor: pointer; color: var(--accent); padding: 2px 4px; border-radius: 4px; transition: background 0.15s; }
@@ -2089,6 +2088,7 @@
 			.maximized .pomodoro-sessions { display: none; }
 			.maximized .stopwatch-laps { display: none; }
 			.maximized .timer-controls { flex-shrink: 0; margin-top: 16px; }
+			.maximized .cal-left { max-width: 420px; }
 
 			/* ── 视频解析 ── */
 			.vp-wrap { display: flex; flex-direction: column; gap: 14px; padding: 16px; }
@@ -2116,7 +2116,7 @@
 
 			/* ── 图片嗅探 ── */
 			.ig-layout { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-			.ig-sidebar { width: 220px; min-width: 120px; border-right: none; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; padding: 10px 12px 10px; gap: 10px; }
+			.ig-sidebar { width: 220px; min-width: 120px; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; padding: 10px 12px 10px; gap: 10px; }
 			.ig-sidebar .btn { width: 100%; justify-content: center; padding: 6px 10px; flex-shrink: 0; }
 			.ig-side-group { display: flex; flex-direction: column; gap: 3px; }
 			.ig-side-label { font-size: calc(var(--font-size)*0.714); color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
@@ -2143,7 +2143,7 @@
 			.ig-progress-bar { height: 100%; background: var(--accent); transition: width 0.2s; border-radius: 99px; }
 			@media (max-width: 600px) {
 				.ig-layout { flex-direction: column; }
-				.ig-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 6px; max-height: 120px; }
+				.ig-sidebar { width: 100%; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 6px; max-height: 120px; }
 				.ig-sidebar .btn { width: auto; }
 				.ig-side-group { flex-direction: row; align-items: center; gap: 4px; }
 				.ig-sidebar select { width: auto; min-width: 60px; }
@@ -3385,9 +3385,32 @@
 				const sidebar = panel.querySelector('#nt-sidebar');
 				if (resizer && sidebar) {
 					let dragging = false, startX = 0, startW = 0;
-					resizer.addEventListener('mousedown', (e) => { dragging = true; startX = e.clientX; startW = sidebar.offsetWidth; resizer.classList.add('active'); document.body.style.userSelect = 'none'; });
-					window.addEventListener('mousemove', (e) => { if (!dragging) return; const panelW = panel.querySelector('.notes-layout')?.offsetWidth || 600; const newW = Math.max(180, Math.min(panelW * 0.5, startW + (e.clientX - startX))); sidebar.style.width = newW + 'px'; });
-					window.addEventListener('mouseup', () => { if (dragging) { dragging = false; resizer.classList.remove('active'); document.body.style.userSelect = ''; } });
+					const onMove = (e) => {
+						if (!dragging) return;
+						if (e.cancelable) e.preventDefault();
+						const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+						const panelW = panel.querySelector('.notes-layout')?.offsetWidth || 600;
+						const newW = Math.max(180, Math.min(panelW * 0.5, startW + (clientX - startX)));
+						sidebar.style.width = newW + 'px';
+					};
+					const onEnd = () => {
+						dragging = false; resizer.classList.remove('active'); document.body.style.userSelect = '';
+						window.removeEventListener('mousemove', onMove);
+						window.removeEventListener('mouseup', onEnd);
+						window.removeEventListener('touchmove', onMove);
+						window.removeEventListener('touchend', onEnd);
+					};
+					const onStart = (e) => {
+						if (e.button !== undefined && e.button !== 0) return;
+						dragging = true; startX = e.touches ? e.touches[0].clientX : e.clientX; startW = sidebar.offsetWidth;
+						resizer.classList.add('active'); document.body.style.userSelect = 'none';
+						window.addEventListener('mousemove', onMove);
+						window.addEventListener('mouseup', onEnd);
+						window.addEventListener('touchmove', onMove, { passive: false });
+						window.addEventListener('touchend', onEnd);
+					};
+					resizer.addEventListener('mousedown', onStart);
+					resizer.addEventListener('touchstart', onStart, { passive: false });
 				}
 			},
 			onActivate(panel, { bottomBtn, footInfo, App }) {
@@ -3437,9 +3460,9 @@
 								</div>
 								<div class="timer-preset-row" id="tm-cd-presets">
 									<button class="timer-preset" data-sec="60">1分钟</button>
-									<button class="timer-preset" data-sec="300">5分钟</button>
+									<button class="timer-preset active" data-sec="300">5分钟</button>
 									<button class="timer-preset" data-sec="600">10分钟</button>
-									<button class="timer-preset active" data-sec="1500">25分钟</button>
+									<button class="timer-preset" data-sec="1500">25分钟</button>
 									<button class="timer-preset" data-sec="1800">30分钟</button>
 								</div>
 								<div class="timer-custom-row">
@@ -3892,7 +3915,7 @@
 								<div class="cal-nav"><button id="cal-prev">◀</button></div>
 								<span class="cal-title-group">
 									<span class="cal-clickable" id="cal-year-btn"></span><span>年</span>
-									<span class="cal-clickable" id="cal-month-btn"></span><span>月</span>
+									<span id="cal-month-part"><span class="cal-clickable" id="cal-month-btn"></span><span>月</span></span>
 								</span>
 								<div class="cal-nav">
 									<button id="cal-today" title="回到今天">今</button>
@@ -3994,9 +4017,32 @@
 				const calLayout = panel.querySelector('.cal-layout');
 				if (resizer && calLeft) {
 					let dragging = false, startX = 0, startW = 0;
-					resizer.addEventListener('mousedown', (e) => { dragging = true; startX = e.clientX; startW = calLeft.offsetWidth; resizer.classList.add('active'); document.body.style.userSelect = 'none'; });
-					window.addEventListener('mousemove', (e) => { if (!dragging) return; const layoutW = calLayout?.offsetWidth || 600; const newW = Math.max(layoutW * 0.25, Math.min(layoutW * 0.75, startW + (e.clientX - startX))); calLeft.style.flex = `0 0 ${newW}px`; });
-					window.addEventListener('mouseup', () => { if (dragging) { dragging = false; resizer.classList.remove('active'); document.body.style.userSelect = ''; } });
+					const onMove = (e) => {
+						if (!dragging) return;
+						if (e.cancelable) e.preventDefault();
+						const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+						const layoutW = calLayout?.offsetWidth || 600;
+						const newW = Math.max(layoutW * 0.25, Math.min(layoutW * 0.75, startW + (clientX - startX)));
+						calLeft.style.flex = `0 0 ${newW}px`;
+					};
+					const onEnd = () => {
+						dragging = false; resizer.classList.remove('active'); document.body.style.userSelect = '';
+						window.removeEventListener('mousemove', onMove);
+						window.removeEventListener('mouseup', onEnd);
+						window.removeEventListener('touchmove', onMove);
+						window.removeEventListener('touchend', onEnd);
+					};
+					const onStart = (e) => {
+						if (e.button !== undefined && e.button !== 0) return;
+						dragging = true; startX = e.touches ? e.touches[0].clientX : e.clientX; startW = calLeft.offsetWidth;
+						resizer.classList.add('active'); document.body.style.userSelect = 'none';
+						window.addEventListener('mousemove', onMove);
+						window.addEventListener('mouseup', onEnd);
+						window.addEventListener('touchmove', onMove, { passive: false });
+						window.addEventListener('touchend', onEnd);
+					};
+					resizer.addEventListener('mousedown', onStart);
+					resizer.addEventListener('touchstart', onStart, { passive: false });
 				}
 
 				// 今日更新折叠
@@ -4215,12 +4261,12 @@
 				if (this._viewMode === 'year') {
 					if (calRight) calRight.style.display = 'none';
 					if (resizerEl) resizerEl.style.display = 'none';
-					if (calLeft) calLeft.style.flex = '1 1 100%';
+					if (calLeft) { calLeft.style.flex = '1 1 100%'; calLeft.style.maxWidth = 'none'; }
 					if (mainArea) mainArea.style.flexShrink = '1';
 				} else {
 					if (calRight) calRight.style.display = '';
 					if (resizerEl) resizerEl.style.display = '';
-					if (calLeft) calLeft.style.flex = '';
+					if (calLeft) { calLeft.style.flex = ''; calLeft.style.maxWidth = ''; }
 					if (mainArea) mainArea.style.flexShrink = '0';
 				}
 			},
@@ -4741,6 +4787,7 @@
 				const showsEl = panel.querySelector('#cal-shows');
 				if (!area) return;
 				if (showsEl) showsEl.style.display = '';
+				panel.querySelector('#cal-month-part')?.style.removeProperty('display');
 				const y = this._calendarYear, m = this._calendarMonth;
 				if (yearBtn) yearBtn.textContent = y;
 				if (monthBtn) monthBtn.textContent = m + 1;
@@ -4832,6 +4879,7 @@
 				const y = this._calendarYear;
 				if (yearBtn) yearBtn.textContent = y;
 				if (monthBtn) monthBtn.textContent = '';
+				panel.querySelector('#cal-month-part')?.style.setProperty('display','none');
 				if (showsEl) showsEl.style.display = 'none';
 				const today = new Date();
 				const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
@@ -5185,7 +5233,7 @@
 								</select>
 							</div>
 						</div>
-						<div class="notes-resizer ig-resizer" id="ig-resizer"></div>
+						<div class="notes-resizer" id="ig-resizer"></div>
 						<div class="ig-main">
 							<div class="ig-top">
 								<button class="btn btn-primary" id="ig-refresh">${I.search} 嗅探图片</button>
@@ -5378,9 +5426,32 @@
 				const sidebar = panel.querySelector('.ig-sidebar');
 				if (resizer && sidebar) {
 					let dragging = false, startX = 0, startW = 0;
-					resizer.addEventListener('mousedown', (e) => { dragging = true; startX = e.clientX; startW = sidebar.offsetWidth; resizer.classList.add('active'); document.body.style.userSelect = 'none'; });
-					window.addEventListener('mousemove', (e) => { if (!dragging) return; const panelW = panel.querySelector('.ig-layout')?.offsetWidth || 600; const newW = Math.max(120, Math.min(panelW * 0.45, startW + (e.clientX - startX))); sidebar.style.width = newW + 'px'; });
-					window.addEventListener('mouseup', () => { if (dragging) { dragging = false; resizer.classList.remove('active'); document.body.style.userSelect = ''; } });
+					const onMove = (e) => {
+						if (!dragging) return;
+						if (e.cancelable) e.preventDefault();
+						const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+						const panelW = panel.querySelector('.ig-layout')?.offsetWidth || 600;
+						const newW = Math.max(120, Math.min(panelW * 0.45, startW + (clientX - startX)));
+						sidebar.style.width = newW + 'px';
+					};
+					const onEnd = () => {
+						dragging = false; resizer.classList.remove('active'); document.body.style.userSelect = '';
+						window.removeEventListener('mousemove', onMove);
+						window.removeEventListener('mouseup', onEnd);
+						window.removeEventListener('touchmove', onMove);
+						window.removeEventListener('touchend', onEnd);
+					};
+					const onStart = (e) => {
+						if (e.button !== undefined && e.button !== 0) return;
+						dragging = true; startX = e.touches ? e.touches[0].clientX : e.clientX; startW = sidebar.offsetWidth;
+						resizer.classList.add('active'); document.body.style.userSelect = 'none';
+						window.addEventListener('mousemove', onMove);
+						window.addEventListener('mouseup', onEnd);
+						window.addEventListener('touchmove', onMove, { passive: false });
+						window.addEventListener('touchend', onEnd);
+					};
+					resizer.addEventListener('mousedown', onStart);
+					resizer.addEventListener('touchstart', onStart, { passive: false });
 				}
 			},
 			onActivate(panel, { bottomBtn, footInfo }) {
@@ -6482,13 +6553,13 @@
                                 <button type="button" class="btn-icon accent-btn" id="e-ep-dec">−1</button>
                                 <button type="button" class="btn-icon accent-btn" id="e-ep-inc">+1</button>
                             </div>
-                            ${Array.isArray(d._candidates) && d._candidates.length > 1 ? '<div id="e-ep-candidates" style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;"></div>' : '<div id="e-ep-candidates" style="display:none;"></div>'}
-                        </div>
+                            </div>
                         <div class="form-group">
                             <label class="form-label">总集数</label>
                             <input type="number" id="e-total" value="${d.latestEpisode || ''}">
                         </div>
                     </div>
+                    ${Array.isArray(d._candidates) && d._candidates.length > 1 ? '<div id="e-ep-candidates" style="display:flex;gap:4px;margin-top:-2px;margin-bottom:6px;flex-wrap:wrap;"></div>' : '<div id="e-ep-candidates" style="display:none;"></div>'}
                     <div class="form-group">
                         <label class="form-label">封面图片 URL（可选）</label>
                         <div class="inline-row">
