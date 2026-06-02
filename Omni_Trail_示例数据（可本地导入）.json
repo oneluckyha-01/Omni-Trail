@@ -1,0 +1,1022 @@
+{
+  "_version": "1.2.1",
+  "_date": "2026-06-02T08:11:29.847Z",
+  "settings": {
+    "enableBall": true,
+    "listMode": "black",
+    "blacklist": [],
+    "whitelist": [],
+    "theme": "orange",
+    "font": "system",
+    "view": "grid",
+    "sortBy": "updatedDesc",
+    "autoCleanTitle": true,
+    "clickMode": "single-main",
+    "defaultTab": "navlinks",
+    "ui": {
+      "mainWidth": 1020,
+      "editWidth": 420,
+      "settingsWidth": 600,
+      "opacity": 0.7,
+      "blur": 18,
+      "radius": 14,
+      "radiusSm": 8,
+      "platformIconRadius": 12,
+      "fontSize": 17,
+      "mainHeightAuto": false,
+      "mainHeightMin": 750,
+      "mainHeightMax": 750
+    },
+    "ball": {
+      "size": 38,
+      "bgOpacity": 0.5
+    },
+    "ballPos": {
+      "right": "16px",
+      "top": "calc(50vh - 20px)",
+      "left": "auto",
+      "bottom": "auto"
+    },
+    "hotkeys": {
+      "main": "Shift+E",
+      "record": "Shift+R",
+      "platforms": "Shift+G",
+      "navlinks": "Shift+D",
+      "notes": "Shift+N",
+      "openRecords": "",
+      "timer": ""
+    },
+    "dict": {
+      "statuses": [
+        {
+          "color": "#6ee7b7",
+          "id": "watching",
+          "label": "正在追"
+        },
+        {
+          "color": "#fcd34d",
+          "id": "todo",
+          "label": "想看"
+        },
+        {
+          "color": "#93c5fd",
+          "id": "finished",
+          "label": "已看完"
+        },
+        {
+          "color": "#d8b4fe",
+          "id": "paused",
+          "label": "暂停中"
+        },
+        {
+          "color": "#fca5a5",
+          "id": "dropped",
+          "label": "已弃剧"
+        }
+      ],
+      "types": [
+        {
+          "name": "动漫",
+          "single": false
+        },
+        {
+          "name": "国产剧",
+          "single": false
+        },
+        {
+          "name": "美剧",
+          "single": false
+        },
+        {
+          "name": "日韩剧",
+          "single": false
+        },
+        {
+          "name": "电影",
+          "single": true
+        },
+        {
+          "name": "纪录片",
+          "single": true
+        },
+        {
+          "name": "综艺",
+          "single": false
+        },
+        {
+          "name": "短视频",
+          "single": false
+        },
+        {
+          "name": "其他",
+          "single": false
+        }
+      ]
+    },
+    "enableReminder": true,
+    "cardStyle": "immersive",
+    "videoParsers": [
+      {
+        "enabled": true,
+        "name": "默认A",
+        "url": "https://json.fongmi.cc/web?url="
+      },
+      {
+        "enabled": true,
+        "name": "默认B",
+        "url": "https://super.playr.top/?url="
+      },
+      {
+        "enabled": true,
+        "name": "CK解析",
+        "url": "https://www.ckplayer.vip/jiexi/?url="
+      },
+      {
+        "enabled": true,
+        "name": "Player-JY",
+        "url": "https://jx.playerjy.com/?url="
+      },
+      {
+        "enabled": true,
+        "name": "虾米解析",
+        "url": "https://jx.xmflv.com/?url="
+      },
+      {
+        "enabled": true,
+        "name": "789解析",
+        "url": "https://jiexi.789jiexi.icu:4433/?url="
+      },
+      {
+        "enabled": true,
+        "name": "937解析",
+        "url": "https://bfq.937auth.vip?url="
+      },
+      {
+        "enabled": true,
+        "name": "HLS解析",
+        "url": "https://jx.hls.one/?url="
+      },
+      {
+        "enabled": true,
+        "name": "极速解析",
+        "url": "https://jx.2s0.cn/player/?url="
+      },
+      {
+        "enabled": true,
+        "name": "冰豆解析",
+        "url": "https://bd.jx.cn/?url="
+      },
+      {
+        "enabled": true,
+        "name": "剖元解析",
+        "url": "https://www.pouyun.com/?url="
+      },
+      {
+        "enabled": true,
+        "name": "973解析",
+        "url": "https://jx.973973.xyz/?url="
+      },
+      {
+        "enabled": true,
+        "name": "七哥解析",
+        "url": "https://jx.nnxv.cn/tv.php?url="
+      },
+      {
+        "enabled": true,
+        "name": "playm3u8",
+        "url": "https://www.playm3u8.cn/jiexi.php?url="
+      },
+      {
+        "enabled": true,
+        "name": "七七云解析",
+        "url": "https://jx.77flv.cc/?url="
+      },
+      {
+        "enabled": true,
+        "name": "芒果TV1",
+        "url": "https://video.isyour.love/player/getplayer?url="
+      },
+      {
+        "enabled": true,
+        "name": "M1907",
+        "url": "https://im1907.top/?jx="
+      },
+      {
+        "enabled": true,
+        "name": "Yparse",
+        "url": "https://jx.yparse.com/index.php?url="
+      }
+    ],
+    "videoDefaultParser": 0,
+    "videoPlayMode": "iframe",
+    "videoAutoDetect": true,
+    "imgGrabMinSize": 100,
+    "imgGrabMinWidth": 0,
+    "imgGrabMinHeight": 0,
+    "imgGrabFormat": "original",
+    "imgGrabSort": "default",
+    "imgGrabPreviewSize": "medium",
+    "imgGrabRename": "{PAGETITLE}_{NO}.{EXT}",
+    "imgGrabAutoSniff": false,
+    "weekStart": 1,
+    "tabOrder": [
+      "records",
+      "platforms",
+      "navlinks",
+      "notes",
+      "calendar",
+      "timer",
+      "videoparse",
+      "imggrab"
+    ],
+    "enabledTabs": [
+      "records",
+      "platforms",
+      "navlinks",
+      "notes",
+      "calendar",
+      "timer",
+      "imggrab"
+    ],
+    "_userThemeSelected": true
+  },
+  "shows": [
+    {
+      "coverUrl": "https://lain.bgm.tv/pic/cover/l/b5/82/521431_15f1x.jpg",
+      "createdAt": 1780387217921,
+      "currentEpisode": 1,
+      "history": [],
+      "id": "cmpwckxdt1tn",
+      "latestEpisode": null,
+      "links": [
+        {
+          "episode": 1,
+          "url": "https://www.iqiyi.com/v_20vztzhqkok.html?vfrmblk=pca_list_perview&bstp=18&e=fa5d98dd32e5189ceefa6bcd483e5121&block=pca_list_perview&bkt=list_main%252Clist_online&rseat=area_6&rpage=category_lib.4&position=1&vfrm=category_lib.4&hoverBlock=pca_list_perview&vfrmrst=area_6"
+        }
+      ],
+      "name": "成何体统",
+      "notes": "",
+      "rating": 0,
+      "schedule": "unset",
+      "status": "todo",
+      "type": "动漫",
+      "updatedAt": 1780387308276,
+      "pinnedLinkIdx": -1
+    },
+    {
+      "coverUrl": "https://i0.hdslb.com/bfs/bangumi/image/0af10a0c3258186e96fde4406b384c13dd643d8f.png",
+      "createdAt": 1778243689439,
+      "currentEpisode": 1,
+      "history": [],
+      "id": "cmowwdo7zk4d",
+      "latestEpisode": null,
+      "links": [
+        {
+          "episode": 1,
+          "url": "https://www.bilibili.com/bangumi/play/ep733316?from_spmid=666.25.episode.0"
+        }
+      ],
+      "name": "凡人修仙传",
+      "notes": "",
+      "pinnedLinkIdx": -1,
+      "rating": 5,
+      "schedule": "Sat",
+      "status": "finished",
+      "type": "动漫",
+      "updatedAt": 1780387335813
+    },
+    {
+      "_lastReminded": 1779605649245,
+      "coverUrl": "https://gimg0.baidu.com/gimg/app=2001&n=0&g=0n&fmt=jpeg&src=img.czzy66.com/2025/12/c6709ae0995683-270x380.jpg",
+      "createdAt": 1777967318940,
+      "currentEpisode": 1,
+      "history": [],
+      "id": "cmosbu3dosxs",
+      "latestEpisode": 26,
+      "links": [
+        {
+          "episode": 1,
+          "url": "https://v.youku.com/v_show/id_XNjUxNjk2MTUwNA==.html?spm=a2hkt.13141534.298639.d_1_1&scm=20140719.apircmd.298639.video_XNjUxNjk2MTUwNA%3D%3D&s=caab6ed59a5547a78fb1"
+        }
+      ],
+      "name": "光阴之外",
+      "notes": "",
+      "pinnedLinkIdx": -1,
+      "rating": 4,
+      "schedule": "Sun",
+      "status": "paused",
+      "type": "动漫",
+      "updatedAt": 1780387328821
+    },
+    {
+      "_lastReminded": 1779605649246,
+      "coverUrl": "https://gimg0.baidu.com/gimg/app=2001&n=0&g=0n&fmt=jpeg&src=img.czzy66.com/2023/05/c7de1a6efdbb40-270x380.jpg",
+      "createdAt": 1777966915372,
+      "currentEpisode": 1,
+      "history": [],
+      "id": "cmosblfzg66m",
+      "latestEpisode": 180,
+      "links": [
+        {
+          "episode": 1,
+          "url": "https://v.qq.com/x/cover/mzc00200aaogpgh/r0047gdjpw6.html"
+        }
+      ],
+      "name": "仙逆",
+      "notes": "",
+      "pinnedLinkIdx": -1,
+      "rating": 4,
+      "schedule": "Sun",
+      "status": "watching",
+      "type": "动漫",
+      "updatedAt": 1780387119895
+    }
+  ],
+  "platforms": [
+    {
+      "category": "mainstream",
+      "icon": "",
+      "id": "cp_main_iqiyi",
+      "name": "爱奇艺",
+      "sortOrder": 0,
+      "url": "https://www.iqiyi.com/"
+    },
+    {
+      "category": "mainstream",
+      "icon": "https://favicon.cccyun.cc/v.youku.com",
+      "id": "cp_main_youku",
+      "name": "优酷",
+      "pinnedUrlIdx": 1,
+      "sortOrder": 1,
+      "url": "https://v.youku.com",
+      "urls": [
+        "https://www.youku.com/ku/webhome",
+        "https://v.youku.com"
+      ]
+    },
+    {
+      "category": "mainstream",
+      "icon": "",
+      "id": "cp_main_tencent",
+      "name": "腾讯视频",
+      "sortOrder": 2,
+      "url": "https://v.qq.com/"
+    },
+    {
+      "category": "mainstream",
+      "icon": "",
+      "id": "cp_main_mango",
+      "name": "芒果TV",
+      "sortOrder": 3,
+      "url": "https://www.mgtv.com/"
+    },
+    {
+      "category": "mainstream",
+      "icon": "",
+      "id": "cp_main_bilibili",
+      "name": "哔哩哔哩",
+      "sortOrder": 4,
+      "url": "https://www.bilibili.com/"
+    },
+    {
+      "category": "mainstream",
+      "icon": "",
+      "id": "cp_main_douyin",
+      "name": "抖音",
+      "sortOrder": 5,
+      "url": "https://www.douyin.com/"
+    },
+    {
+      "category": "custom",
+      "extraUrls": [
+        "https://www.cz4k2.com",
+        "https://www.cz4k1.com"
+      ],
+      "icon": "https://favicon.cccyun.cc/www.cz4k.com",
+      "id": "cp_cust_cz",
+      "name": "厂长资源",
+      "pinnedUrlIdx": 0,
+      "sortOrder": 6,
+      "url": "https://www.cz4k.com",
+      "urls": [
+        "https://www.cz4k.com",
+        "https://www.czzyv.com"
+      ]
+    },
+    {
+      "category": "custom",
+      "extraUrls": [],
+      "icon": "https://favicon.cccyun.cc/v.ikanbot.com",
+      "id": "cp_cust_ikanbot",
+      "name": "爱看机器人",
+      "pinnedUrlIdx": 1,
+      "sortOrder": 8,
+      "url": "https://www.ikanbot.com/",
+      "urls": [
+        "https://v.ikanbot.com/",
+        "https://www.ikanbot.com/"
+      ]
+    },
+    {
+      "category": "custom",
+      "icon": "",
+      "id": "cp_cust_iyf",
+      "name": "爱壹帆",
+      "sortOrder": 9,
+      "url": "https://www.iyf.tv/"
+    },
+    {
+      "category": "custom",
+      "icon": "",
+      "id": "cp_cust_kimivod",
+      "name": "Kimivod",
+      "sortOrder": 10,
+      "url": "https://kimivod.org/"
+    }
+  ],
+  "platformCategories": [
+    {
+      "color": "#3b82f6",
+      "id": "mainstream",
+      "name": "主流平台"
+    },
+    {
+      "color": "#c61212",
+      "id": "custom",
+      "name": "其他平台"
+    }
+  ],
+  "navCategories": [
+    {
+      "icon": "⭐",
+      "id": "common",
+      "name": "常用"
+    },
+    {
+      "icon": "🤖",
+      "id": "ai",
+      "name": "AI"
+    },
+    {
+      "icon": "🧰",
+      "id": "c_1776907735069",
+      "name": "工具"
+    },
+    {
+      "icon": "💻",
+      "id": "dev",
+      "name": "编程"
+    },
+    {
+      "icon": "📺",
+      "id": "c_1776908696654",
+      "name": "视频"
+    },
+    {
+      "icon": "🎮",
+      "id": "c_1777003253012_qgv6f",
+      "name": "游戏"
+    },
+    {
+      "icon": "💼",
+      "id": "c_1777003081599_735ir",
+      "name": "网藏"
+    },
+    {
+      "icon": "🔗",
+      "id": "nc_1779889899436_qw0",
+      "name": "最近"
+    }
+  ],
+  "navLinks": [
+    {
+      "categories": [
+        "dev"
+      ],
+      "desc": "代码托管与协作",
+      "icon": "",
+      "id": "1",
+      "order": 0,
+      "title": "GitHub",
+      "url": "https://github.com"
+    },
+    {
+      "categories": [
+        "common",
+        "ai"
+      ],
+      "desc": "OpenAI 对话助手",
+      "icon": "https://icons.duckduckgo.com/ip3/chat.openai.com.ico",
+      "id": "2",
+      "order": 1,
+      "title": "ChatGPT",
+      "url": "https://chat.openai.com"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "快速生成一个即用即弃的邮箱地址。",
+      "icon": "",
+      "id": "l_1776907837111",
+      "order": 3,
+      "title": "临时邮箱",
+      "url": "https://22.do/zh"
+    },
+    {
+      "categories": [
+        "ai"
+      ],
+      "desc": "AI",
+      "icon": "https://favicon.cccyun.cc/claude.ai",
+      "id": "l_1776907911480",
+      "order": 2,
+      "title": "Claude",
+      "url": "https://claude.ai"
+    },
+    {
+      "categories": [
+        "common",
+        "ai"
+      ],
+      "desc": "",
+      "icon": "https://favicon.cccyun.cc/chat.deepseek.com",
+      "id": "l_1776907990717",
+      "order": 4,
+      "title": "DeepSeek",
+      "url": "https://chat.deepseek.com"
+    },
+    {
+      "categories": [
+        "common",
+        "c_1776908696654"
+      ],
+      "desc": "视频平台",
+      "icon": "https://favicon.cccyun.cc/www.bilibili.com",
+      "id": "l_1776908100386",
+      "order": 7,
+      "title": "BiliBili",
+      "url": "https://www.bilibili.com/"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "传文件",
+      "icon": "https://www.google.com/s2/favicons?domain=easychuan.cn&sz=64",
+      "id": "l_1776908187239",
+      "order": 8,
+      "title": "轻松传",
+      "url": "https://easychuan.cn/"
+    },
+    {
+      "categories": [
+        "common",
+        "c_1776908696654"
+      ],
+      "desc": "视频平台",
+      "icon": "https://favicon.cccyun.cc/www.douyin.com",
+      "id": "l_1776908748921",
+      "order": 9,
+      "title": "抖音",
+      "url": "https://www.douyin.com/"
+    },
+    {
+      "categories": [
+        "dev"
+      ],
+      "desc": "",
+      "icon": "https://www.google.com/s2/favicons?domain=www.runoob.com&sz=64",
+      "id": "l_1776909042491",
+      "order": 13,
+      "title": "Python 3 教程",
+      "url": "https://www.runoob.com/python3/python3-tutorial.html"
+    },
+    {
+      "categories": [
+        "ai"
+      ],
+      "desc": "千问国际版最新模型",
+      "icon": "",
+      "id": "l_1776909153722",
+      "order": 5,
+      "title": "Qwen AI",
+      "url": "https://chat.qwen.ai/"
+    },
+    {
+      "categories": [
+        "c_1777003081599_735ir"
+      ],
+      "desc": "导航页",
+      "icon": "",
+      "id": "l_1776909242983",
+      "order": 15,
+      "title": "工具达人",
+      "url": "https://toolsdar.cn/"
+    },
+    {
+      "categories": [
+        "c_1776908696654"
+      ],
+      "desc": "社交平台",
+      "icon": "https://favicon.cccyun.cc/www.xiaohongshu.com",
+      "id": "l_1776909279000",
+      "order": 16,
+      "title": "小红书",
+      "url": "https://www.xiaohongshu.com/"
+    },
+    {
+      "categories": [
+        "ai"
+      ],
+      "desc": "字节跳动旗下的AI助手",
+      "icon": "",
+      "id": "l_1776919634831_jus67l",
+      "order": 6,
+      "title": "豆包",
+      "url": "https://www.doubao.com/chat/"
+    },
+    {
+      "categories": [
+        "ai"
+      ],
+      "desc": "AI",
+      "icon": "",
+      "id": "l_1776997512754_syf13",
+      "order": 7,
+      "title": "Kimi",
+      "url": "https://kimi.moonshot.cn/"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "在线传文件",
+      "icon": "",
+      "id": "l_1776997611331_6ii5o",
+      "order": 19,
+      "title": "空投快传",
+      "url": "https://airportal.cn/"
+    },
+    {
+      "categories": [
+        "common",
+        "ai"
+      ],
+      "desc": "AI",
+      "icon": "https://favicon.cccyun.cc/gemini.google.com",
+      "id": "l_1777001212808_jizes",
+      "order": 20,
+      "title": "Gemini",
+      "url": "https://gemini.google.com/app"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "将网页链接生成二维码",
+      "icon": "https://favicon.cccyun.cc/qrbtf.com",
+      "id": "l_1777001287621_ww66y",
+      "order": 21,
+      "title": "二维码生成器",
+      "url": "https://qrbtf.com/zh"
+    },
+    {
+      "categories": [
+        "c_1776908696654"
+      ],
+      "desc": "视频平台",
+      "icon": "",
+      "id": "l_1777001411424_icenj",
+      "order": 22,
+      "title": "爱奇艺",
+      "url": "https://www.iqiyi.com/"
+    },
+    {
+      "categories": [
+        "c_1776908696654"
+      ],
+      "desc": "视频平台",
+      "icon": "",
+      "id": "l_1777001429099_72zbs",
+      "order": 23,
+      "title": "优酷",
+      "url": "https://www.youku.com/"
+    },
+    {
+      "categories": [
+        "c_1776908696654"
+      ],
+      "desc": "视频平台",
+      "icon": "",
+      "id": "l_1777001469925_0wxma",
+      "order": 24,
+      "title": "腾讯视频",
+      "url": "https://v.qq.com"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "临时邮箱",
+      "icon": "",
+      "id": "l_1777001530125_t3tsm",
+      "order": 25,
+      "title": "临时邮箱",
+      "url": "https://www.suiyongsuiqi.com/zh"
+    },
+    {
+      "categories": [
+        "c_1777003081599_735ir"
+      ],
+      "desc": "小而美的网页",
+      "icon": "",
+      "id": "l_1777001604527_qzfr2",
+      "order": 26,
+      "title": "30ai tool",
+      "url": "https://www.30aitool.com/tools"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "获取emoji表情",
+      "icon": "",
+      "id": "l_1777002090227_k5io7",
+      "order": 32,
+      "title": "emoji",
+      "url": "https://getemoji.com/"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "PDF公式识别",
+      "icon": "https://favicon.cccyun.cc/doc2x.com",
+      "id": "l_1777002219114_ydhfl",
+      "order": 33,
+      "title": "Doc2x",
+      "url": "https://doc2x.com/"
+    },
+    {
+      "categories": [
+        "c_1776907735069"
+      ],
+      "desc": "免费强大的PDF在线处理",
+      "icon": "",
+      "id": "l_1777002258541_lmpn8",
+      "order": 34,
+      "title": "iLovePDF",
+      "url": "https://www.ilovepdf.com/zh-cn"
+    },
+    {
+      "categories": [
+        "c_1777003253012_qgv6f"
+      ],
+      "desc": "打字练习",
+      "icon": "",
+      "id": "l_1777003366674_qk9kn",
+      "order": 36,
+      "title": "打字鸭",
+      "url": "https://www.daziya.com/"
+    },
+    {
+      "categories": [
+        "c_1777003253012_qgv6f"
+      ],
+      "desc": "小霸王在线游戏",
+      "icon": "",
+      "id": "l_1777003397097_3xc2t",
+      "order": 37,
+      "title": "小霸王游戏",
+      "url": "https://www.yikm.net/"
+    },
+    {
+      "categories": [
+        "c_1777003253012_qgv6f"
+      ],
+      "desc": "免费在线游戏",
+      "icon": "",
+      "id": "l_1777003421029_3uva4",
+      "order": 38,
+      "title": "免费在线游戏",
+      "url": "https://poki.cn/"
+    },
+    {
+      "categories": [
+        "c_1777003253012_qgv6f"
+      ],
+      "desc": "在线打字练习",
+      "icon": "",
+      "id": "l_1777003452467_ij9r2",
+      "order": 39,
+      "title": "打字",
+      "url": "https://dazidazi.com/"
+    },
+    {
+      "categories": [
+        "c_1777003081599_735ir"
+      ],
+      "desc": "网盘搜索",
+      "icon": "",
+      "id": "l_1777003567136_t8wz5",
+      "order": 40,
+      "title": "奇乐搜",
+      "url": "https://www.qileso.com/"
+    },
+    {
+      "categories": [
+        "c_1777003253012_qgv6f"
+      ],
+      "desc": "免费将上传的图片转为卡通化图片",
+      "icon": "",
+      "id": "l_1777003636121_y1vkg",
+      "order": 41,
+      "title": "图片卡通化",
+      "url": "https://toonme.com/"
+    },
+    {
+      "categories": [
+        "c_1777003253012_qgv6f"
+      ],
+      "desc": "Windows系统模拟",
+      "icon": "",
+      "id": "l_1777003680431_upjd6",
+      "order": 42,
+      "title": "系统更新模型",
+      "url": "https://fakeupdate.net/"
+    },
+    {
+      "categories": [
+        "nc_1779889899436_qw0"
+      ],
+      "desc": "白嫖大模型api中转站导航网",
+      "icon": "https://icons.duckduckgo.com/ip3/link.hcnsec.cn.ico",
+      "id": "nl_1780041811094_ge8",
+      "order": 48,
+      "title": "API导航网",
+      "url": "https://link.hcnsec.cn/"
+    },
+    {
+      "categories": [
+        "ai"
+      ],
+      "desc": "",
+      "icon": "https://icons.duckduckgo.com/ip3/chatglm.cn.ico",
+      "id": "nl_1780043576736_wgl",
+      "order": 51,
+      "title": "智谱清言",
+      "url": "https://chatglm.cn/main/alltoolsdetail?lang=zh"
+    },
+    {
+      "categories": [
+        "ai"
+      ],
+      "desc": "",
+      "icon": "https://icons.duckduckgo.com/ip3/xinghuo.xfyun.cn.ico",
+      "id": "nl_1780043630816_cr7",
+      "order": 52,
+      "title": "讯飞星火-懂我的AI助手",
+      "url": "https://xinghuo.xfyun.cn/desk"
+    },
+    {
+      "categories": [
+        "nc_1779889899436_qw0"
+      ],
+      "desc": "脚本猫的脚本市场",
+      "icon": "https://icons.duckduckgo.com/ip3/scriptcat.org.ico",
+      "id": "nl_1780117408816_dwi",
+      "order": 48,
+      "title": "脚本搜索",
+      "url": "https://scriptcat.org/zh-CN/search"
+    }
+  ],
+  "navEngines": [
+    {
+      "icon": "🔍",
+      "id": "bing",
+      "isDefault": true,
+      "name": "Bing",
+      "order": 1,
+      "url": "https://www.bing.com/search?q={q}"
+    },
+    {
+      "icon": "🌐",
+      "id": "google",
+      "isDefault": true,
+      "name": "Google",
+      "order": 2,
+      "url": "https://www.google.com/search?q={q}"
+    },
+    {
+      "icon": "🐕",
+      "id": "sogou",
+      "isDefault": false,
+      "name": "Sougou",
+      "order": 4,
+      "url": "https://www.sogou.com/web?query={q}"
+    },
+    {
+      "icon": "🔍",
+      "id": "e_1776997467744_y7ea8",
+      "isDefault": false,
+      "name": "360",
+      "order": 3,
+      "url": "https://so.com/s?q={q}"
+    },
+    {
+      "icon": "📺",
+      "id": "e_1777002554805_h0kf7",
+      "isDefault": false,
+      "name": "BiliBili",
+      "order": 5,
+      "url": "https://search.bilibili.com/all?keyword={q}"
+    },
+    {
+      "icon": "🎓",
+      "id": "e_1777003853034_w2ylh",
+      "isDefault": false,
+      "name": "Scholar",
+      "order": 6,
+      "url": "https://scholar.google.com/scholar?hl=zh-CN&as_sdt=0%2C3&q={q}"
+    }
+  ],
+  "notes": [
+    {
+      "content": "## 简介\n\n万象 (Omni Trail) 是一款浏览器悬浮球全能助手脚本，集成追剧管理、网页导航、Markdown 笔记、日程待办、时钟工具、视频解析（需手动在设置-面板页面中勾选启用）、图片嗅探等八大功能模块，配合 18 套主题与 WebDAV 云同步，一个脚本满足日常浏览的多种需求。\n\n---\n\n## 功能模块\n\n### 1. 观看记录\n\n追剧进度管理的核心模块。\n\n- **三种展示模式**：经典卡片、沉浸卡片、列表模式，按需切换\n- **自动元数据刮削**：在 B站、豆瓣、Bangumi 等页面自动获取剧集封面、评分、简介等信息\n- **状态管理**：正在追 / 想看 / 已看完 / 暂停中 / 已弃剧，自定义状态颜色\n- **类型分类**：动漫、国产剧、美剧、日韩剧、电影、纪录片、综艺等\n- **快速记录**：在视频页面按 `Shift+R` 弹出快速记录面板，自动填入当前页面信息\n- **多链接管理**：同一剧集可关联多个播放平台链接\n- **更新提醒**：设置更新周期后，到达更新日自动桌面通知\n\n### 2. 观影平台\n\n管理常用观影平台的快捷入口。\n\n- **分类管理**：默认\"主流平台\"和\"其他平台\"，可自定义分类名称和颜色\n- **平台卡片**：每个平台显示名称、网址，可自定义图标\n- **分类筛选**：按分类快速过滤显示\n- **域名替换**：平台换域名时，一键批量替换所有剧集中的旧链接\n\n### 3. 网页导航\n\n个人书签与搜索引擎集合。\n\n- **自定义分类**：创建书签分类（如常用、工具、学习等）\n- **书签管理**：添加网页标题、URL、图标，支持拖拽排序\n- **多引擎搜索**：内置 Bing、Google、搜合、百度四个搜索引擎，可自定义添加\n- **搜索栏**：输入关键词后选择引擎一键搜索\n\n### 4. 笔记便签\n\n内置 Markdown 编辑器。\n\n- **Markdown 支持**：标题、列表、引用、代码块、表格、链接、图片等语法\n- **实时预览**：编辑与预览并排显示\n- **搜索过滤**：按关键词搜索笔记\n- **置顶功能**：重要笔记可置顶显示\n- **导出功能**：笔记可导出为 Markdown 文件\n\n### 5. 日程管理\n\n待办事项与日期标注。\n\n- **月视图 / 年视图**：月视图查看当月详情，年视图查看全年概览（支持 4×3、3×4、6×2 布局）\n- **农历显示**：每日下方显示农历日期，节日自动标注（春节、端午、中秋等）\n- **待办事项**：每日可添加多条待办，标记完成状态\n- **日期标注**：标记重要日期（生日、考试、纪念日等），显示倒计时/已过天数\n- **重复规则**：标注支持重复，可选公历或农历重复，数量 1-99，单位天/月/年\n- **自动顺延**：过期的重复标注自动顺延到下一个对应日期\n- **数据导入导出**：日程数据可单独导入导出为 JSON 文件\n\n### 6. 时钟工具\n\n四种计时模式。\n\n- **实时时钟**：显示当前时间、日期、农历、干支生肖年，每日一言（点击可刷新）\n- **秒表**：精确到 0.01 秒，支持计次记录，可无限次计次\n- **倒计时**：预设常用时长（1/3/5/10/15/25/30/45/60 分钟），支持自定义时长\n- **番茄钟**：专注 + 休息循环，可配置专注时长、短休息、长休息、长休息间隔\n- **最大化模式**：点击最大化按钮，时钟/秒表等全屏显示\n\n### 7. 视频解析（仅供代码学习使用）\n\n多源视频解析播放。\n\n- **多解析源**：内置多个第三方解析源，支持自定义添加/删除/排序\n- **播放方式**：新标签页打开、面板内播放、页面注入三种模式\n- **页面注入模式**：将解析后的播放器直接替换页面原播放器，保留页面信息便于快速记录\n- **源延迟检测**：一键测试各解析源响应速度，选择最优源\n- **自动检测**：访问主流视频网站时自动识别并填入页面 URL\n\n### 8. 图片嗅探\n\n一键提取网页中的图片。\n\n- **智能过滤**：按最小尺寸、最小宽度、最小高度过滤，排除小图标\n- **格式筛选**：全部 / JPG / PNG / GIF / WebP / SVG\n- **排序方式**：默认排序 / 按尺寸降序 / 按尺寸升序\n- **预览功能**：悬停预览大图，支持不同预览尺寸\n- **文件重命名**：自定义下载文件名模板，支持页面标题、序号、扩展名变量\n\n---\n\n## 设置项\n\n### 主题与字体\n\n- 18 套内置主题（9 深色 + 9 浅色）\n- 支持自定义字体（系统默认 / 思源黑体 / 微软雅黑 / 苹方等）\n- 字号可调（12-24px）\n\n### 外观布局\n\n- 圆角大小可调\n- 面板宽度/高度可调\n- 毛玻璃效果可开关\n- 面板透明度可调\n\n### 悬浮球设置\n\n- 悬浮球大小可调（30-60px）\n- 位置可拖拽固定\n- 点击模式：单击展开 / 双击展开\n- 可设为页面过滤模式（仅在指定页面显示）\n\n### 快捷键\n\n- 各功能模块部分有默认快捷键，全部可自定义\n- 快速记录可配置默认操作（打开记录面板 / 快速标记已看完等）\n\n### 数据管理\n\n- **本地导出**：导出全部数据为 JSON 文件\n- **WebDAV 云同步**：配置坚果云等 WebDAV 服务，一键备份/恢复\n- **选择性导入**：导入时可勾选要导入的数据范围（剧集/平台/导航/笔记/待办/标注/设置）\n- **合并与覆盖**：导入支持合并到现有数据或覆盖现有数据两种模式\n- **撤销功能**：云端恢复后支持一键撤销\n\n---\n\n## 使用技巧\n\n1. **快速记录追剧**：在 B站/爱奇艺等视频页面按 `Shift+R`，自动识别页面信息（剧名、当前集数）\n2. **年视图切换布局**：在日程管理的年视图中，点击右上角按钮循环切换 4×3 / 3×4 / 6×2 布局\n3. **农历标注节日**：日历自动显示农历和传统节日（春节、端午、中秋等），以特殊颜色标注\n4. **番茄钟统计**：番茄钟模式下显示今日已完成番茄数\n5. **图片批量下载**：在图片丰富的页面使用图片嗅探，设置合适的最小尺寸过滤小图标\n\n---\n\n## 隐私说明\n\n- 所有数据存储在浏览器本地（Tampermonkey 存储空间），不会上传到任何服务器\n- WebDAV 同步仅在用户主动操作时连接用户自己配置的 WebDAV 服务器\n- Bangumi 元数据刮削仅在用户主动触发时访问 Bangumi 公开 API\n- 每日一言通过 hitokoto.cn 公开 API 获取",
+      "createdAt": 1780305411925,
+      "id": "nt_1780305411925_ico",
+      "pinned": true,
+      "title": "万象 · Omni Trail — 详细功能说明",
+      "updatedAt": 1780387641702
+    },
+    {
+      "content": "1.地球又一次转到了太阳第一次照到我的地方。\n2.今天没有流星，但是是可以许愿的日子。\n3.与所以美好的存在又多了一年的故事。\n4.低调地说“朕生日，各友邦速来贺寿”。\n5.故事不长，也不难讲，四字概括，生日快乐！\n6.每天有每天的快乐，今天是生日快乐。\n7.成长不期而遇，生日如期而至。\n8.今天不想听大道理，只想吃小蛋糕。\n9.生而自由，日日欢愉，快意人生，乐得自在。\n10.一年一度的出厂日期到了，恭喜自己又成功升级到最新版本。\n",
+      "createdAt": 1779889053665,
+      "id": "nt_1779889053665_6nj",
+      "pinned": false,
+      "title": "生日文案",
+      "updatedAt": 1780387609518
+    },
+    {
+      "content": "> [!quote]\n> 笔记参考视频：[从 LLM 到 Agent Skill，一期视频带你打通底层逻辑！](https://www.bilibili.com/video/BV1E7wtzaEdq/?share_source=copy_web&vd_source=88acf6c0eb047f49d531c615d0233a76)\n## LLM\n`LLM`，全称 `Large Language Model`，中文即大语言模型，简称大模型。\n目前大多数模型基本都是基于 [[Transformer]] 架构训练而来。\n\n## Token\n` Token ` 是大语言模型处理文本的**最基本单位**，对应中文为 `词元`。\n\n大模型本质是一个庞大的数学函数，接收的是数字，输出的也是数字。为了让人类与大模型之间能够交流，需要一个“`中间人`”来做翻译。中间人即 ` Tokenizer `，负责编码（文字-->数字） 与解码（数字-->文字）两件事情。\n\n注意 `Token ≠ 词`，可以使用下面的工具来了解一段文本如何被语言模型分词，以及该文本中的标记总数。\n文本转 Token 工具：\n[https://platform.openai.com/tokenizer](https://platform.openai.com/tokenizer)\n[https://claude-tokenizer.vercel.app](https://claude-tokenizer.vercel.app)\n\n平均来讲，1 个 `Token`，对应 0.75 个 `英文单词`，1.5~2 个 `汉字`。\n\n一般情况下模型中 token 和字数的换算比例大致如下：\n\n- 1 个英文字符 ≈ 0.3 个 token。\n- 1 个中文字符 ≈ 0.6 个 token。\n\n## Context\n`Context` 中文意思是 `上下文`，代表大模型每次处理任务时所接收到的信息总和。\n\n\n`Context` 可理解为大模型的 `临时记忆体`，那么这个 Context 能有多大，能塞多少 Token？这就引出 `Context Window` 的概念，对应中文叫做 `上下文窗口`，代表 Context 能容纳的最大 `Token 数量`。\n\n主流模型的 `Context Window` 大小：\n## Prompt\n`Prompt` 对应中文为 `提示词`，是大模型接收的具体问题或指令。\nPrompt 直接决定了大模型的输出质量，一个好的 Prompt 应该是清晰的、具体的、明确的。\nPrompt 可分为 `User Prompt` （用户提示词）与 `System Prompt`（系统提示词）。前者是具体任务时用户自己输入的，后者是开发者在后台配置的，说明人设和做事规则。\n\n`Prompt Engineering` 提示词工程，说白了就是研究怎么把话说明白，让大模型更精准的理解你的意图。\n\n## Tool\n`Tool ` 是大模型用来感知和影响外部环境的函数。\n\n注意，调用工具的不是模型，而是平台\n\n## MCP\n`MCP`，全称 `Model Context Protool`，对应中文为 `模型上下文协议`，可以理解为统一的工具接入标准。\n统一了工具接入格式的标准协议 `MCP` 之后，开发者只需要按照 MCP 的规范开发一次工具，这个工具就可以被所有支持 MCP 的平台使用。类比手机的话，相当于 Type-C 接口，有了统一的标准大家都会方便很多。\n\n## Agent\n能够自主规划，自主调用工具直至完成用户任务的系统为 `Agent` 。\n\n目前比较流行的 Agent 产品有 `Claude Code`、`Codex`、`Gemini CLI` ，所使用的 Agent 构建模式五花八门，比较经典的有 `ReAct`、`Plan And Execute` 等等。\n\n## Agent Skill\n`Agent Skill` 本质上是提前写好给 Agent 的一份Markdown 格式的 `说明文档`，文件名为 ` SKILL.md `。具有运行代码、引用资源等高级功能，其一大特色—— ` 渐进式披露机制 `，可以节省很多 ` Token `。\n\n整体结构分为几个部分：`元数据层(Metadata)` 、 `指令层(Instruction)` 以及 `资源层(Resource)`。\n元数据层相当于这份说明文档的封面，告诉 Agent 这个技能叫什么，负责做什么事情，至少包含包含 `name` 和 `description` 属性。\n指令层没有具体要求，能把事情向 Agent 说明白就行，格式由自己决定。\n资源层包括 `Reference` 和 `Script`。\n\n| 名称   | 加载情况     |\n| ---- | -------- |\n| 元数据层 | 始终加载     |\n| 指令层  | 按需加载     |\n| 资源层  | 按需中的按需加载 |\n\n## CLI\n\n`CLI`，全称 `Command Line Interface`，中文即 `命令行界面`。\n\nCLI 工具的优势：Token 消耗小，执行效率高。",
+      "createdAt": 1779802884319,
+      "id": "nt_1779802884319_muu",
+      "pinned": true,
+      "title": "AI 术语",
+      "updatedAt": 1780387628271
+    }
+  ],
+  "todos": {
+    "2026-12-31": [
+      {
+        "id": "mpwcyyq9d2ey",
+        "text": "事项1",
+        "done": true,
+        "ts": 1780387872849
+      },
+      {
+        "id": "mpwcz17arupl",
+        "text": "事项2",
+        "done": false,
+        "ts": 1780387876054
+      },
+      {
+        "id": "mpwcz4y36avl",
+        "text": "事项3",
+        "done": false,
+        "ts": 1780387880907
+      }
+    ]
+  },
+  "marks": {
+    "2027-01-01": [
+      {
+        "id": "mpwcv5gagnsa",
+        "label": "元旦",
+        "color": "#6366f1"
+      }
+    ],
+    "2026-10-01": [
+      {
+        "id": "mpwcvlrjap1y",
+        "label": "国庆节",
+        "color": "#6366f1"
+      }
+    ],
+    "2027-02-06": [
+      {
+        "id": "mpwcw6tmjd5g",
+        "label": "2027年春节",
+        "color": "#6366f1"
+      }
+    ],
+    "2026-12-31": [
+      {
+        "id": "mpwcws76j6y4",
+        "label": "今年余额",
+        "color": "#f472b6"
+      }
+    ]
+  }
+}
