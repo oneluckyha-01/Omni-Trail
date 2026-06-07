@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万象 · OmniTrail 使用帮助</title>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polygon points='16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76'/></svg>">
+<style>
+  /* ═══════════════════════════════════════════════════════
+     THEME VARIABLES
+     ═══════════════════════════════════════════════════════ */
+  :root {
+    --sidebar-w: 240px;
+    --content-max: 820px;
+    --transition: 0.3s ease;
+  }
+
+  [data-theme="dark"] {
+    --bg: #0b0b10;
+    --bg-mesh-1: rgba(124, 108, 240, 0.06);
+    --bg-mesh-2: rgba(56, 189, 248, 0.04);
+    --bg-mesh-3: rgba(244, 114, 182, 0.03);
+    --surface: #15151f;
+    --surface-hi: #1e1e30;
+    --surface-hover: #262640;
+    --text: #e8e8f0;
+    --muted: #8888a8;
+    --accent: #7c6cf0;
+    --accent-light: #9d8ff5;
+    --accent-dim: rgba(124, 108, 240, 0.12);
+    --border: #2a2a40;
+    --border-light: #1f1f34;
+    --sidebar-bg: rgba(15, 15, 22, 0.85);
+    --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    --glow: rgba(124, 108, 240, 0.15);
+    --warn-bg: rgba(245, 158, 11, 0.1);
+    --warn-border: rgba(245, 158, 11, 0.2);
+    --warn-color: #fbbf24;
+    --disclaimer-bg: rgba(248, 113, 113, 0.08);
+    --disclaimer-border: rgba(248, 113, 113, 0.2);
+    --disclaimer-icon: #f87171;
+    --toggle-bg: #1e1e30;
+    --toggle-icon: #fcd34d;
+    --scrollbar-thumb: #2a2a40;
+    --scrollbar-track: transparent;
+  }
+
+  [data-theme="light"] {
+    --bg: #f5f5f8;
+    --bg-mesh-1: rgba(124, 108, 240, 0.06);
+    --bg-mesh-2: rgba(56, 189, 248, 0.05);
+    --bg-mesh-3: rgba(244, 114, 182, 0.04);
+    --surface: #ffffff;
+    --surface-hi: #f0f0f6;
+    --surface-hover: #e8e8f2;
+    --text: #1a1a2e;
+    --muted: #6b6b88;
+    --accent: #6356d8;
+    --accent-light: #7b6fe6;
+    --accent-dim: rgba(99, 86, 216, 0.1);
+    --border: #e0e0ec;
+    --border-light: #eaeaf0;
+    --sidebar-bg: rgba(245, 245, 248, 0.9);
+    --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --glow: rgba(124, 108, 240, 0.08);
+    --warn-bg: rgba(245, 158, 11, 0.08);
+    --warn-border: rgba(245, 158, 11, 0.25);
+    --warn-color: #b45309;
+    --disclaimer-bg: rgba(248, 113, 113, 0.06);
+    --disclaimer-border: rgba(248, 113, 113, 0.25);
+    --disclaimer-icon: #dc2626;
+    --toggle-bg: #ffffff;
+    --toggle-icon: #6356d8;
+    --scrollbar-thumb: #d0d0dc;
+    --scrollbar-track: transparent;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     RESET & BASE
+     ═══════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+  body {
+    font-family: -apple-system, system-ui, 'PingFang SC', 'HarmonyOS Sans', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    transition: background var(--transition), color var(--transition);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MODERN MESH BACKGROUND
+     ═══════════════════════════════════════════════════════ */
+  .bg-mesh {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bg-mesh::before,
+  .bg-mesh::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    animation: meshFloat 20s ease-in-out infinite alternate;
+  }
+  .bg-mesh::before {
+    width: 600px; height: 600px;
+    background: var(--bg-mesh-1);
+    top: -10%; left: -5%;
+  }
+  .bg-mesh::after {
+    width: 500px; height: 500px;
+    background: var(--bg-mesh-2);
+    bottom: -10%; right: -5%;
+    animation-delay: -10s;
+    animation-duration: 25s;
+  }
+  .bg-mesh .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: meshFloat 30s ease-in-out infinite alternate-reverse;
+  }
+  .bg-mesh .orb:nth-child(1) {
+    width: 400px; height: 400px;
+    background: var(--bg-mesh-3);
+    top: 40%; right: 20%;
+    animation-delay: -5s;
+  }
+  .bg-mesh .orb:nth-child(2) {
+    width: 350px; height: 350px;
+    background: var(--bg-mesh-2);
+    top: 60%; left: 10%;
+    animation-delay: -15s;
+    animation-duration: 22s;
+  }
+
+  @keyframes meshFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.05); }
+    66% { transform: translate(-20px, 30px) scale(0.95); }
+    100% { transform: translate(10px, -10px) scale(1.02); }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     TOP HEADER BAR
+     ═══════════════════════════════════════════════════════ */
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 100;
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .top-bar-logo {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .top-bar-logo span { color: var(--accent); }
+  .top-bar-badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* theme toggle */
+  .theme-toggle {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--toggle-bg);
+    color: var(--toggle-icon);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all var(--transition);
+  }
+  .theme-toggle:hover {
+    background: var(--surface-hover);
+    transform: scale(1.05);
+  }
+
+  /* mobile menu toggle */
+  .menu-toggle {
+    display: none;
+    width: 40px; height: 40px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--toggle-bg);
+    color: var(--text);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all var(--transition);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     LEFT SIDEBAR NAV
+     ═══════════════════════════════════════════════════════ */
+  .sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+    z-index: 90;
+    transition: background var(--transition), border-color var(--transition), transform 0.3s ease;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 20px 6px;
+  }
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    position: relative;
+    border-left: 3px solid transparent;
+  }
+  .sidebar a:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+  }
+  .sidebar a.active {
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .sidebar a .nav-icon {
+    font-size: 15px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .sidebar a .nav-num {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+    min-width: 20px;
+    opacity: 0.7;
+  }
+  .sidebar a.active .nav-num { opacity: 1; }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 20px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════════════════ */
+  .main {
+    margin-left: var(--sidebar-w);
+    padding: 56px 40px 80px;
+    display: flex;
+    justify-content: center;
+    transition: margin-left 0.3s ease;
+  }
+  .container {
+    max-width: var(--content-max);
+    width: 100%;
+  }
+
+  /* hero */
+  .hero {
+    text-align: center;
+    padding: 48px 0 36px;
+  }
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 15px;
+  }
+  .hero .badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 4px 14px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 12px;
+    border: 1px solid rgba(124,108,240,0.15);
+  }
+
+  /* sections */
+  section { margin-bottom: 48px; }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color var(--transition);
+  }
+  h2 .icon { color: var(--accent); }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 8px;
+    color: var(--accent);
+  }
+
+  /* cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--card-shadow);
+    transition: all var(--transition);
+  }
+  .card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px var(--glow);
+    transform: translateY(-1px);
+  }
+  .card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card p, .card ul { font-size: 14px; color: var(--muted); }
+  .card ul { padding-left: 18px; }
+  .card li { margin-bottom: 4px; }
+  .card li strong { color: var(--text); }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+  th, td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; transition: border-color var(--transition); }
+  th {
+    background: var(--surface-hi);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td { background: var(--surface); }
+  td code {
+    background: var(--surface-hi);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  /* tip / warn */
+  .tip {
+    background: var(--accent-dim);
+    border: 1px solid rgba(124,108,240,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin: 14px 0;
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .tip::before { content: '💡 '; }
+
+  .warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin: 14px 0;
+    color: var(--warn-color);
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .warn::before { content: '⚠️ '; }
+
+  /* disclaimer */
+  .disclaimer {
+    background: var(--disclaimer-bg);
+    border: 1px solid var(--disclaimer-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 32px;
+    margin-bottom: 16px;
+  }
+  .disclaimer h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--disclaimer-icon);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .disclaimer ul {
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 2;
+  }
+  .disclaimer li strong { color: var(--text); }
+
+  /* grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  /* tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+  .tag-new { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .tag-default { background: var(--accent-dim); color: var(--accent); }
+
+  /* kbd */
+  .kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    background: var(--surface-hi);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: monospace;
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  /* footer */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+    transition: border-color var(--transition);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* back to top */
+  .back-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 16px rgba(124,108,240,0.3);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all 0.3s ease;
+    z-index: 80;
+  }
+  .back-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .back-top:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,108,240,0.4); }
+
+  /* ═══════════════════════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .sidebar {
+      transform: translateX(-100%);
+      width: 260px;
+      background: var(--bg);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: flex; }
+    .main { margin-left: 0; padding: 56px 20px 60px; }
+    .hero h1 { font-size: 26px; }
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 56px 16px 60px; }
+    .hero h1 { font-size: 22px; }
+    .hero { padding: 32px 0 24px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    table { font-size: 13px; }
+    th, td { padding: 6px 8px; }
+    .card { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Mesh background -->
+<div class="bg-mesh"><div class="orb"></div><div class="orb"></div></div>
+
+<!-- Top header bar -->
+<header class="top-bar">
+  <div class="top-bar-left">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="菜单">☰</button>
+    <div class="top-bar-logo">万象 · <span>Omni Trail</span></div>
+    <div class="top-bar-badge">v1.3.0</div>
+  </div>
+  <div class="top-bar-right">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题" title="切换明暗主题">
+      <span id="themeIcon">☀️</span>
+    </button>
+  </div>
+</header>
+
+<!-- Left sidebar navigation -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-label">📑 导航目录</div>
+  <a href="#ball"><span class="nav-num">01</span><span class="nav-icon">🔮</span> 悬浮球</a>
+  <a href="#record"><span class="nav-num">02</span><span class="nav-icon">⚡</span> 快速记录</a>
+  <a href="#records"><span class="nav-num">03</span><span class="nav-icon">📺</span> 观看记录</a>
+  <a href="#platforms"><span class="nav-num">04</span><span class="nav-icon">🎬</span> 观影平台</a>
+  <a href="#navlinks"><span class="nav-num">05</span><span class="nav-icon">🧭</span> 网页导航</a>
+  <a href="#notes"><span class="nav-num">06</span><span class="nav-icon">📝</span> 笔记便签</a>
+  <a href="#calendar"><span class="nav-num">07</span><span class="nav-icon">📅</span> 日程管理</a>
+  <a href="#timer"><span class="nav-num">08</span><span class="nav-icon">⏱️</span> 时钟工具</a>
+  <a href="#videoparse"><span class="nav-num">09</span><span class="nav-icon">🎬</span> 视频**</a>
+  <a href="#imggrab"><span class="nav-num">10</span><span class="nav-icon">🔍</span> 图片嗅探</a>
+  <a href="#sync"><span class="nav-num">11</span><span class="nav-icon">☁️</span> 数据同步</a>
+  <a href="#settings"><span class="nav-num">12</span><span class="nav-icon">⚙️</span> 设置面板</a>
+  <a href="#mobile"><span class="nav-num">13</span><span class="nav-icon">📱</span> 移动端适配</a>
+  <a href="#faq"><span class="nav-num">14</span><span class="nav-icon">❓</span> 常见问题</a>
+  <div class="sidebar-divider"></div>
+  <a href="#disclaimer"><span class="nav-num">—</span><span class="nav-icon">📋</span> 免责声明</a>
+</nav>
+
+<!-- Main content -->
+<main class="main">
+<div class="container">
+
+<div class="hero">
+  <h1>万象 · Omni Trail</h1>
+  <p>浏览器悬浮球全能助手 · 使用帮助文档</p>
+  <div class="badge">v1.3.0</div>
+</div>
+
+<!-- 01 悬浮球 -->
+<section id="ball">
+  <h2><span class="icon">🔮</span> 悬浮球</h2>
+  <div class="card">
+    <h4>基本操作</h4>
+    <table>
+      <tr><th>操作</th><th>效果</th></tr>
+      <tr><td><strong>单击</strong></td><td>打开主面板（默认，可在设置中改为打开快速记录）</td></tr>
+      <tr><td><strong>双击</strong></td><td>打开快速记录（默认，可在设置中改为打开主面板）</td></tr>
+      <tr><td><strong>长按</strong>（500ms）</td><td>打开悬浮球菜单（隐藏球、设置、快速记录、帮助）</td></tr>
+      <tr><td><strong>拖拽</strong></td><td>移动悬浮球位置，松手自动吸附到屏幕左侧或右侧</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>悬浮球设置</h4>
+    <p>在 <strong>设置 → 悬浮球</strong> 中可调整：</p>
+    <ul>
+      <li><strong>大小</strong>：30-60px 滑块调节</li>
+      <li><strong>透明度</strong>：0-100% 调节</li>
+      <li><strong>位置预设</strong>：左上/左中/左下/右上/右中/右下 6 个位置</li>
+      <li><strong>点击模式</strong>：单击=主面板+双击=记录，或反过来</li>
+      <li><strong>打开面板时隐藏悬浮球</strong>：开启后打开面板时悬浮球自动隐藏</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 02 快速记录 -->
+<section id="record">
+  <h2><span class="icon">⚡</span> 快速记录</h2>
+  <div class="card">
+    <h4>三种记录模式</h4>
+    <p>快速记录面板顶部有 3 个模式标签页，可一键切换：</p>
+    <table>
+      <tr><th>模式</th><th>说明</th></tr>
+      <tr><td><strong>📺 剧集模式</strong></td><td>自动提取当前页面标题，填写剧名、类型、状态、当前集数、链接</td></tr>
+      <tr><td><strong>🎬 平台模式</strong></td><td>自动提取网站名称和图标，快速添加观影平台</td></tr>
+      <tr><td><strong>🔗 导航模式</strong></td><td>自动提取网页标题、描述和图标，快速收藏网页导航</td></tr>
+    </table>
+  </div>
+  <div class="tip">快速记录会自动从当前页面提取信息（标题、URL、图标等），并支持<strong>正则清洗</strong>自动去除标题中的无关后缀。</div>
+</section>
+
+<!-- 03 观看记录 -->
+<section id="records">
+  <h2><span class="icon">📺</span> 观看记录</h2>
+  <div class="card">
+    <h4>功能概览</h4>
+    <ul>
+      <li><strong>卡片/列表视图</strong>切换：顶部工具栏可切换显示模式</li>
+      <li><strong>追剧状态筛选</strong>：按状态过滤（在追、已弃、已看完等）</li>
+      <li><strong>类型筛选</strong>：按剧集类型过滤（电视剧、电影、动漫等）</li>
+      <li><strong>更新周期筛选</strong>：按更新周期过滤</li>
+      <li><strong>搜索</strong>：实时搜索剧名</li>
+      <li><strong>排序</strong>：按更新时间、名称、评分等排序</li>
+      <li><strong>追剧进度</strong>：每部剧显示当前已追的最大集数，支持 +1 快速更新</li>
+      <li><strong>评分</strong>：1-5 星评级</li>
+      <li><strong>进度环</strong>：显示观看集数与总集数的进度百分比</li>
+      <li><strong>播放链接</strong>：直接跳转到播放页面</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>数据字典</h4>
+    <p>在 <strong>设置 → 字典</strong> 中可自定义：</p>
+    <ul>
+      <li><strong>追剧状态</strong>：添加/编辑/删除/排序状态标签，自定义颜色</li>
+      <li><strong>剧集类型</strong>：添加/编辑/删除/排序类型，标记"单集"类型（如电影）</li>
+    </ul>
+  </div>
+  <div class="tip">Bangumi 元数据刮削：编辑剧集时可自动从 Bangumi 获取封面、评分、简介等信息。</div>
+</section>
+
+<!-- 04 观影平台 -->
+<section id="platforms">
+  <h2><span class="icon">🎬</span> 观影平台</h2>
+  <div class="card">
+    <h4>功能概览</h4>
+    <ul>
+      <li><strong>平台管理</strong>：添加/编辑/删除常用观影平台</li>
+      <li><strong>分类筛选</strong>：按平台分类过滤（主流平台、其他平台等，可在设置中自定义）</li>
+      <li><strong>搜索</strong>：实时搜索平台名称</li>
+      <li><strong>域名批量替换</strong>：一键更新所有记录中的平台域名</li>
+      <li><strong>图标管理</strong>：支持自定义图标（URL 或上传）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 05 网页导航 -->
+<section id="navlinks">
+  <h2><span class="icon">🧭</span> 网页导航</h2>
+  <div class="card">
+    <h4>功能概览</h4>
+    <ul>
+      <li><strong>卡片/列表视图</strong>：顶部工具栏切换显示模式</li>
+      <li><strong>分类管理</strong>：自定义分类标签，拖拽排序</li>
+      <li><strong>搜索引擎</strong>：集成 Bing/Google/百度等搜索引擎，支持切换</li>
+      <li><strong>搜索历史</strong> <span class="tag tag-new">新</span>：自动记录搜索关键词，下次输入时显示历史建议</li>
+      <li><strong>拖拽排序</strong> <span class="tag tag-new">新</span>：卡片视图下支持拖拽调整网页顺序</li>
+      <li><strong>网页描述</strong>：支持为每个网页添加描述文字</li>
+      <li><strong>快捷访问</strong>：点击直接跳转到目标网页</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>搜索历史设置</h4>
+    <p>在 <strong>设置 → 快捷操作</strong> 中可配置：</p>
+    <ul>
+      <li><strong>启用搜索历史</strong>：开启/关闭搜索历史记录功能</li>
+      <li><strong>最大历史保留条数</strong>：0-50 条可调</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 06 笔记便签 -->
+<section id="notes">
+  <h2><span class="icon">📝</span> 笔记便签</h2>
+  <div class="card">
+    <h4>功能概览</h4>
+    <ul>
+      <li><strong>Markdown 编辑</strong>：支持标准 Markdown 语法（简化）</li>
+      <li><strong>笔记列表</strong>：左侧边栏显示所有笔记，支持搜索</li>
+      <li><strong>新建/删除</strong>：底部操作栏一键操作</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 07 日程管理 -->
+<section id="calendar">
+  <h2><span class="icon">📅</span> 日程管理</h2>
+  <div class="card">
+    <h4>日历视图</h4>
+    <ul>
+      <li><strong>农历显示</strong>：每天显示对应农历日期</li>
+      <li><strong>节假日标记</strong>：法定节假日和传统节日特殊显示</li>
+      <li><strong>周起始日切换</strong>：支持周一/周日作为一周起始（右上角按钮）</li>
+      <li><strong>年份总览</strong>：右上角按钮可展开全年 12 个月一览</li>
+      <li><strong>追剧更新</strong>：日历格子中显示当天有更新的剧集</li>
+      <li><strong>日期标注</strong>：为特定日期添加自定义标注（工作学习、生日纪念、假日节日等 7 种类型）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>右侧面板 <span class="tag tag-new">新</span></h4>
+    <p>日历右侧面板支持<strong>标签页切换</strong>，包含两个功能区：</p>
+    <ul>
+      <li><strong>📅 标注</strong>：查看和管理所有日期标注，支持按类型筛选，列表/时间线视图切换</li>
+      <li><strong>✅ 待办</strong>：按日/月/年查看和管理待办事项，支持勾选完成</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>标注类型</h4>
+    <p>内置 7 种标注类型，可在 <strong>设置 → 字典 → 标注类型</strong> 中自定义：</p>
+    <table>
+      <tr><th>类型</th><th>颜色</th><th>用途</th></tr>
+      <tr><td>工作学习</td><td style="color:#6366f1;">● 紫色</td><td>学习计划、工作任务</td></tr>
+      <tr><td>生日纪念</td><td style="color:#f472b6;">● 粉色</td><td>生日、纪念日</td></tr>
+      <tr><td>重要提醒</td><td style="color:#f59e0b;">● 橙色</td><td>重要事项提醒</td></tr>
+      <tr><td>假日节日</td><td style="color:#4ade80;">● 绿色</td><td>假期、节日安排</td></tr>
+      <tr><td>出行旅行</td><td style="color:#38bdf8;">● 蓝色</td><td>旅行计划</td></tr>
+      <tr><td>纪念日</td><td style="color:#f87171;">● 红色</td><td>特殊纪念日</td></tr>
+      <tr><td>生活日常</td><td style="color:#a78bfa;">● 淡紫</td><td>日常生活安排</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 08 时钟工具 -->
+<section id="timer">
+  <h2><span class="icon">⏱️</span> 时钟工具</h2>
+  <div class="card">
+    <h4>四种模式</h4>
+    <table>
+      <tr><th>模式</th><th>说明</th></tr>
+      <tr><td><strong>🕐 时钟</strong></td><td>大字体时钟显示，含农历日期和每日一言</td></tr>
+      <tr><td><strong>⏳ 倒计时</strong></td><td>自定义倒计时器，支持分钟/秒设置</td></tr>
+      <tr><td><strong>⏱ 秒表</strong></td><td>精确秒表，支持暂停/继续和圈数记录</td></tr>
+      <tr><td><strong>🍅 番茄钟</strong></td><td>专注工作法计时器（默认 25 分钟工作 + 5 分钟休息）</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 09 视频 -->
+<section id="videoparse">
+  <h2><span class="icon">🎬</span> 视频**</h2>
+  <div class="card">
+    <h4>功能概览</h4>
+    <ul>
+      <li><strong>多源**</strong>：内置 18 个视频**接口，粘贴视频链接即可**</li>
+      <li><strong>播放模式</strong>：支持新标签页播放、注入播放、内嵌 iframe 播放</li>
+      <li><strong>自动检测</strong>：支持自动检测页面中的视频链接</li>
+    </ul>
+  </div>
+  <div class="tip">默认未启用，需在 <strong>设置 → 面板页面</strong> 中勾选启用。</div>
+</section>
+
+<!-- 10 图片嗅探 -->
+<section id="imggrab">
+  <h2><span class="icon">🔍</span> 图片嗅探</h2>
+  <div class="card">
+    <h4>功能概览</h4>
+    <ul>
+      <li><strong>图片嗅探</strong>：一键抓取当前页面所有图片资源</li>
+      <li><strong>尺寸筛选</strong>：按最小尺寸、宽度、高度过滤图片</li>
+      <li><strong>格式筛选</strong>：按图片格式过滤（原始/PNG/JPG/WebP）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 11 数据同步 -->
+<section id="sync">
+  <h2><span class="icon">☁️</span> 数据同步</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h4>本地备份</h4>
+      <ul>
+        <li><strong>导出备份</strong>：选择数据范围，下载 JSON 文件</li>
+        <li><strong>导入数据</strong>：从 JSON 文件恢复，支持覆盖和合并模式</li>
+        <li><strong>数据重置</strong>：选择性清除指定模块数据（7 项可选）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>WebDAV 云同步</h4>
+      <ul>
+        <li>支持坚果云等 WebDAV 服务</li>
+        <li><strong>上传备份</strong>：将数据上传到云端</li>
+        <li><strong>云端恢复</strong>：从云端下载并恢复数据（支持撤销）</li>
+        <li>在 <strong>设置 → WebDAV</strong> 中配置服务器信息</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warn">数据重置面板支持<strong>全选/取消全选</strong>，可快速选择或取消所有数据模块。恢复后有 5 秒撤销窗口。</div>
+</section>
+
+<!-- 12 设置面板 -->
+<section id="settings">
+  <h2><span class="icon">⚙️</span> 设置面板</h2>
+  <div class="card">
+    <h4>设置分类</h4>
+    <table>
+      <tr><th>分类</th><th>内容</th></tr>
+      <tr><td><strong>🎨 外观</strong></td><td>主题切换（18 套主题，深色/浅色各 9 套）、字体选择（7 种字体）、字号调节</td></tr>
+      <tr><td><strong>📐 布局</strong></td><td>圆角、面板尺寸、高度、卡片样式（经典/沉浸式）</td></tr>
+      <tr><td><strong>⚡ 快捷操作</strong></td><td>快捷键配置、快速记录模式、正则清洗、搜索历史设置</td></tr>
+      <tr><td><strong>🔮 悬浮球</strong></td><td>大小、透明度、位置、点击模式、面板时隐藏</td></tr>
+      <tr><td><strong>📋 面板页面</strong></td><td>标签排序、启用/禁用页面、默认标签页</td></tr>
+      <tr><td><strong>🔒 页面过滤</strong></td><td>黑名单/白名单模式，指定脚本运行的网站</td></tr>
+      <tr><td><strong>📚 字典</strong></td><td>剧集类型、追剧状态、平台分类、标注类型 — 均支持自定义颜色</td></tr>
+      <tr><td><strong>☁️ 数据</strong></td><td>WebDAV 配置、导出/导入备份、数据重置、恢复初始状态</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>恢复初始状态</h4>
+    <p>在 <strong>设置 → 数据与关于</strong> 底部，有 <strong style="color:#f87171;">⚠ 恢复初始状态</strong> 按钮：</p>
+    <ul>
+      <li>清除<strong>所有</strong>数据并恢复为初次安装时的默认设置</li>
+      <li>包括设置、面板顺序、所有内容数据</li>
+      <li>操作前有二次确认弹窗</li>
+      <li>执行后有 <strong>5 秒撤销窗口</strong>，可点击"撤销"恢复数据</li>
+    </ul>
+  </div>
+  <div class="tip"><strong>数据重置</strong> vs <strong>恢复初始状态</strong>：数据重置是选择性清除指定模块；恢复初始状态是全量清除并恢复出厂设置。</div>
+</section>
+
+<!-- 13 移动端适配 -->
+<section id="mobile">
+  <h2><span class="icon">📱</span> 移动端适配（不推荐在移动端使用）</h2>
+  <div class="card">
+    <h4>窄屏优化（≤480px）</h4>
+    <ul>
+      <li><strong>顶栏精简</strong>：仅显示 Logo + "万象" + 设置 + 关闭，隐藏深浅色/置顶/最大化/云同步按钮</li>
+      <li><strong>底栏精简</strong>：仅显示主操作按钮 + 快速记录，隐藏导出/导入按钮</li>
+      <li><strong>标签栏</strong>：横向滚动，可左右滑动切换标签页</li>
+      <li><strong>观看记录</strong>：列表模式隐藏评分和进度环，保留缩略图、标题、状态、集数、操作按钮</li>
+      <li><strong>设置面板</strong>：导航栏变为横向滚动条，内容区可上下滚动，支持左右滑动切换设置分区</li>
+      <li><strong>编辑面板</strong>：全宽显示，表单垂直堆叠，输入框 16px（防止 iOS 自动缩放）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>触控优化</h4>
+    <ul>
+      <li>所有按钮最小 36px 触控区域</li>
+      <li>悬浮球支持触摸拖拽、单击、双击、长按</li>
+      <li>分屏面板（笔记、日历、图片嗅探）支持触摸拖拽调节宽度</li>
+      <li>Toast 通知移动端全宽显示</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 14 常见问题 -->
+<section id="faq">
+  <h2><span class="icon">❓</span> 常见问题</h2>
+  <div class="card">
+    <h4>Q: 悬浮球不显示怎么办？</h4>
+    <p>1. 检查脚本管理器是否启用该脚本<br>
+       2. 检查当前网站是否在黑名单中（设置 → 页面过滤）<br>
+       3. 确认悬浮球功能已开启（设置 → 悬浮球）<br>
+       4. 尝试刷新页面</p>
+  </div>
+  <div class="card">
+    <h4>Q: 数据丢失了怎么恢复？</h4>
+    <p>1. 如有本地备份 JSON 文件，通过<strong>设置 → 数据与关于 → 导入数据</strong>恢复<br>
+       2. 如已配置 WebDAV，可从<strong>云端恢复</strong>（有 5 秒撤销窗口）<br>
+       3. 部分操作（如数据重置、云端恢复）后会提供短暂的撤销窗口</p>
+  </div>
+  <div class="card">
+    <h4>Q: 如何在多台设备间同步数据？</h4>
+    <p>1. 在<strong>设置 → WebDAV</strong> 中配置云服务（推荐坚果云）<br>
+       2. 在设备 A 点击"上传备份"<br>
+       3. 在设备 B 点击"从云端恢复"<br>
+       4. 也可使用<strong>导出/导入 JSON 文件</strong>手动同步</p>
+  </div>
+  <div class="card">
+    <h4>Q: 快捷键不生效？</h4>
+    <p>快捷键可能与浏览器或网站的快捷键冲突。在<strong>设置 → 快捷操作</strong>中可重新配置，建议使用 <span class="kbd">Shift</span> 组合键。</p>
+  </div>
+  <div class="card">
+    <h4>Q: 如何只在特定网站启用脚本？</h4>
+    <p>在<strong>设置 → 页面过滤</strong>中，切换到<strong>白名单模式</strong>，添加需要启用的网站域名即可。默认为黑名单模式（在所有网站启用）。</p>
+  </div>
+</section>
+
+<!-- 免责声明 -->
+<section id="disclaimer">
+  <div class="disclaimer">
+    <h4>📋 免责声明</h4>
+    <ul>
+      <li><strong>学习交流</strong>：本脚本（万象 · Omni Trail）为个人开源项目，<strong>仅供学习交流和技术研究使用</strong>，不得用于任何商业用途。</li>
+      <li><strong>数据安全</strong>：本脚本数据存储在浏览器本地（localStorage），使用 WebDAV 云同步时数据通过第三方服务器传输，<strong>请自行评估数据安全风险</strong>，建议定期备份重要数据。</li>
+      <li><strong>第三方服务</strong>：本脚本可能引用或链接至第三方网站和服务（如 Bangumi、视频**接口等），<strong>对其可用性、安全性和合法性不作任何保证</strong>。</li>
+      <li><strong>使用风险</strong>：用户应自行承担使用本脚本所产生的一切风险和后果。因使用本脚本导致的<strong>任何直接或间接损失</strong>（包括但不限于数据丢失、服务中断），作者概不负责。</li>
+      <li><strong>知识产权</strong>：本脚本遵循 <strong>MIT 许可证</strong>开源。用户在使用过程中应遵守相关法律法规，<strong>尊重他人的知识产权</strong>。</li>
+      <li><strong>内容免责</strong>：本脚本的快速记录、网页导航等功能所保存的<strong>第三方内容版权归原作者或版权方所有</strong>，脚本仅提供记录和整理功能。</li>
+      <li><strong>更新与维护</strong>：本脚本的更新和维护以作者实际安排为准，<strong>不保证持续更新或功能兼容性</strong>。</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>万象 · Omni Trail v1.3.0 · 作者：<strong>u-luck & AI</strong></p>
+  <p>
+    <a href="mailto:one.lucky.ha@gmail.com">邮箱</a> ·
+    <a href="https://space.bilibili.com/3546832019580521" target="_blank">📺 B站主页</a>
+  </p>
+</footer>
+
+</div>
+</main>
+
+<!-- Back to top -->
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0})" aria-label="回到顶部">↑</button>
+
+<script>
+/* ═══ Theme Toggle ═══ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  html.dataset.theme = next;
+  document.getElementById('themeIcon').textContent = next === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('omni-help-theme', next);
+}
+(function initTheme() {
+  const saved = localStorage.getItem('omni-help-theme');
+  if (saved) {
+    document.documentElement.dataset.theme = saved;
+    document.getElementById('themeIcon').textContent = saved === 'dark' ? '☀️' : '🌙';
+  }
+})();
+
+/* ═══ Sidebar Toggle (mobile) ═══ */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+/* Close sidebar on link click (mobile) */
+document.querySelectorAll('.sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+/* ═══ Scrollspy ═══ */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector('.sidebar a[href="#' + entry.target.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  });
+}, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+sections.forEach(s => observer.observe(s));
+
+/* ═══ Back to Top ═══ */
+const backBtn = document.getElementById('backTop');
+window.addEventListener('scroll', () => {
+  backBtn.classList.toggle('visible', window.scrollY > 400);
+}, { passive: true });
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         万象 · Omni Trail
 // @namespace    https://new.rth1.xyz/omni-trail.js
-// @version      1.2.1
+// @version      1.3.0
 // @description  浏览器悬浮球全能助手：追剧进度管理、网页导航收藏、Markdown笔记、18套主题、Bangumi元数据刮削、WebDAV云同步
 // @author       u-luck & AI
 // @match        *://*/*
@@ -12,6 +12,7 @@
 // @grant        GM_notification
 // @grant        GM_openInTab
 // @grant        GM.xmlHttpRequest
+// @connect      *
 // @license      MIT
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
 // @run-at       document-idle
@@ -35,8 +36,9 @@
 	const KEY_TODOS = 'cine_todos_v1';
 	const KEY_MARKS = 'cine_marks_v1';
 	const KEY_QUOTE = 'cine_quote_v1';
+	const KEY_SEARCH_HISTORY = 'cine_search_history_v1';
 	// !! 同步更新下方 @version !!
-	const VERSION = '1.2.1';
+	const VERSION = '1.3.0';
 
 	const KEY_WEBDAV = 'cine_webdav_v1';
 	const DEFAULT_WEBDAV = {
@@ -71,6 +73,16 @@
 		{ name: '其他', single: false },
 	];
 
+	const DEFAULT_MARK_TYPES = [
+		{ id: 'work', name: '工作学习', color: '#6366f1' },
+		{ id: 'birthday', name: '生日纪念', color: '#f472b6' },
+		{ id: 'reminder', name: '重要提醒', color: '#f59e0b' },
+		{ id: 'holiday', name: '假日节日', color: '#4ade80' },
+		{ id: 'travel', name: '出行旅行', color: '#38bdf8' },
+		{ id: 'anniversary', name: '纪念日', color: '#f87171' },
+		{ id: 'life', name: '生活日常', color: '#a78bfa' },
+	];
+
 	const DEFAULT_PLATFORM_CATEGORIES = [
 		{ id: 'mainstream', name: '主流平台', color: '#3b82f6' },
 		{ id: 'custom', name: '其他平台', color: '#c61212' },
@@ -91,6 +103,7 @@
 
 	const DEFAULT_NAV_CATEGORIES = [
 		{ id: 'common', name: '常用', icon: '⭐' },
+		{ id: 'recent', name: '最近', icon: '🕐' },
 	];
 	const DEFAULT_NAV_LINKS = [];
 	const DEFAULT_NAV_ENGINES = [
@@ -138,7 +151,7 @@
 	};
 
 	const FONTS = {
-		system: { name: '系统默认 (苹方/HarmonyOS)', family: "system-ui, 'PingFang SC', 'HarmonyOS Sans', sans-serif", url: '' },
+		system: { name: '系统默认', family: "system-ui, 'PingFang SC', 'HarmonyOS Sans', sans-serif", url: '' },
 		noto: { name: 'Noto Sans SC (思源黑体)', family: "'Noto Sans SC', sans-serif", url: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap' },
 		serif: { name: 'Noto Serif SC (思源宋体)', family: "'Noto Serif SC', serif", url: 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap' },
 		xiaowei: { name: 'ZCOOL XiaoWei (站酷小薇)', family: "'ZCOOL XiaoWei', sans-serif", url: 'https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&display=swap' },
@@ -148,7 +161,7 @@
 	};
 
 	const DEFAULT_UI = {
-		mainWidth: 900,
+		mainWidth: 1060,
 		editWidth: 420,
 		settingsWidth: 600,
 		opacity: 0.70,
@@ -220,6 +233,47 @@
 		{ host: 'www.1905.com', container: '#player,#vodPlayer', displayNodes: [] },
 		{ host: 'vip.1905.com', container: '#player,#vodPlayer', displayNodes: [] },
 	];
+
+	const DEFAULT_SETTINGS = {
+		enableBall: true,
+		listMode: 'black',
+		blacklist: [],
+		whitelist: [],
+		theme: 'glassLight',
+		font: 'system',
+		view: 'grid',
+		sortBy: 'updatedDesc',
+		autoCleanTitle: true,
+		clickMode: 'single-main',
+		defaultTab: 'navlinks',
+		ui: { ...DEFAULT_UI },
+		ball: { ...DEFAULT_BALL },
+		ballPos: { right: '16px', top: `calc(50vh - ${DEFAULT_BALL.size / 2}px)`, left: 'auto', bottom: 'auto' },
+		hotkeys: { main: 'Shift+E', record: 'Shift+R', platforms: '', navlinks: '', notes: '', openRecords: '', timer: '' },
+		dict: { statuses: [...DEFAULT_STATUSES], types: [...DEFAULT_TYPES], markTypes: [...DEFAULT_MARK_TYPES] },
+		enableReminder: true,
+		cardStyle: 'classic',
+		videoParsers: DEFAULT_VIDEO_PARSERS.map(p => ({ ...p })),
+		videoDefaultParser: 0,
+		videoPlayMode: 'newtab',
+		videoAutoDetect: true,
+		imgGrabMinSize: 100,
+		imgGrabMinWidth: 0,
+		imgGrabMinHeight: 0,
+		imgGrabFormat: 'original',
+		imgGrabSort: 'default',
+		imgGrabPreviewSize: 'medium',
+		imgGrabRename: '{PAGETITLE}_{NO}.{EXT}',
+		imgGrabAutoSniff: false,
+		weekStart: 0,
+		hideBallOnPanel: false,
+		quickRecordMode: 'nav',
+		navView: 'grid',
+		navHistoryEnabled: true,
+		maxSearchHistory: 10,
+		tabOrder: ['records', 'platforms', 'navlinks', 'notes', 'calendar', 'timer', 'videoparse', 'imggrab'],
+		enabledTabs: ['records', 'platforms', 'navlinks', 'notes', 'calendar', 'timer'],
+	};
 
 	// ═══════════════════════════════════════════════════════
 	//  农历转换 (1900-2100)
@@ -390,42 +444,6 @@
 		return null;
 	}
 
-	const DEFAULT_SETTINGS = {
-		enableBall: true,
-		listMode: 'black',
-		blacklist: [],
-		whitelist: [],
-		theme: 'glassLight',
-		font: 'system',
-		view: 'grid',
-		sortBy: 'updatedDesc',
-		autoCleanTitle: true,
-		clickMode: 'single-main',
-		defaultTab: 'records',
-		ui: { ...DEFAULT_UI },
-		ball: { ...DEFAULT_BALL },
-		ballPos: { right: '16px', top: `calc(50vh - ${DEFAULT_BALL.size / 2}px)`, left: 'auto', bottom: 'auto' },
-		hotkeys: { main: 'Shift+E', record: 'Shift+R', platforms: 'Shift+G', navlinks: 'Shift+D', notes: 'Shift+N', openRecords: '', timer: '' },
-		dict: { statuses: [...DEFAULT_STATUSES], types: [...DEFAULT_TYPES] },
-		enableReminder: true,
-		cardStyle: 'classic',
-		videoParsers: DEFAULT_VIDEO_PARSERS.map(p => ({ ...p })),
-		videoDefaultParser: 0,
-		videoPlayMode: 'newtab',
-		videoAutoDetect: true,
-		imgGrabMinSize: 100,
-		imgGrabMinWidth: 0,
-		imgGrabMinHeight: 0,
-		imgGrabFormat: 'original',
-		imgGrabSort: 'default',
-		imgGrabPreviewSize: 'medium',
-		imgGrabRename: '{PAGETITLE}_{NO}.{EXT}',
-		imgGrabAutoSniff: false,
-		weekStart: 0,
-		tabOrder: ['records', 'platforms', 'navlinks', 'notes', 'calendar', 'timer', 'videoparse', 'imggrab'],
-		enabledTabs: ['records', 'platforms', 'navlinks', 'notes', 'calendar', 'timer', 'imggrab'],
-	};
-
 	// ═══════════════════════════════════════════════════════
 	//  STATE
 	// ═══════════════════════════════════════════════════════
@@ -439,6 +457,7 @@
 		navEngines: GM_getValue(KEY_NAV_ENGINES, null) || [...DEFAULT_NAV_ENGINES],
 		navActiveEngine: 'bing',
 		navActiveCategory: 'common',
+		searchHistory: GM_getValue(KEY_SEARCH_HISTORY, []),
 		notes: GM_getValue(KEY_NOTES, []) || [],
 		timer: deepMerge(DEFAULT_TIMER, GM_getValue(KEY_TIMER, {})),
 		todos: GM_getValue(KEY_TODOS, {}) || {},
@@ -501,12 +520,24 @@
 		if (!s.enabledTabs.includes('calendar')) s.enabledTabs.push('calendar');
 		if (!s.tabOrder.includes('videoparse')) s.tabOrder.push('videoparse');
 		if (!s.tabOrder.includes('imggrab')) s.tabOrder.push('imggrab');
-		if (!s.enabledTabs.includes('imggrab')) s.enabledTabs.push('imggrab');
+		// if (!s.enabledTabs.includes('imggrab')) s.enabledTabs.push('imggrab');
 		if (!Array.isArray(s.videoParsers) || !s.videoParsers.length) s.videoParsers = DEFAULT_VIDEO_PARSERS.map(p => ({ ...p }));
 		if (s.videoDefaultParser === undefined || s.videoDefaultParser < 0) s.videoDefaultParser = 0;
 		if (!s.videoPlayMode) s.videoPlayMode = 'newtab';
 		if (s.videoAutoDetect === undefined) s.videoAutoDetect = true;
 		if (s.weekStart === undefined) s.weekStart = 0;
+		if (s.hideBallOnPanel === undefined) s.hideBallOnPanel = false;
+		if (!['show', 'platform', 'nav'].includes(s.quickRecordMode)) s.quickRecordMode = 'show';
+		if (!['grid', 'list'].includes(s.navView)) s.navView = 'grid';
+		// 确保已有用户也拥有"常用"和"最近"分类
+		if (!state.navCategories.find(c => c.id === 'common')) {
+			state.navCategories.unshift({ id: 'common', name: '常用', icon: '⭐' });
+			saveNavCategories();
+		}
+		if (!state.navCategories.find(c => c.id === 'recent')) {
+			state.navCategories.push({ id: 'recent', name: '最近', icon: '🕐' });
+			saveNavCategories();
+		}
 		// 去重保护
 		s.tabOrder = [...new Set(s.tabOrder)];
 		s.enabledTabs = [...new Set(s.enabledTabs)];
@@ -664,7 +695,7 @@
 		if (opts.settings) dump.settings = state.settings;
 		if (opts.shows) dump.shows = state.shows;
 		if (opts.platforms) { dump.platforms = state.platforms; dump.platformCategories = state.platformCategories; }
-		if (opts.nav) { dump.navCategories = state.navCategories; dump.navLinks = state.navLinks; dump.navEngines = state.navEngines; }
+		if (opts.nav) { dump.navCategories = state.navCategories; dump.navLinks = state.navLinks; dump.navEngines = state.navEngines; dump.searchHistory = state.searchHistory; }
 		if (opts.notes) dump.notes = state.notes;
 		if (opts.timer) dump.timer = state.timer;
 		if (opts.todos) dump.todos = state.todos;
@@ -814,6 +845,7 @@
 		pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`,
 		status: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
 		compass: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+		externalLink: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
 	};
 
 	// ═══════════════════════════════════════════════════════
@@ -977,6 +1009,9 @@
 			.accent-btn:active { filter: brightness(0.9); transform: translateY(1px); }
 			.btn-danger { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
 			.btn-danger:hover { background: rgba(239,68,68,0.2); }
+			.btn-factory { background: rgba(220,38,38,0.12); color: #f87171; border: 1px solid rgba(220,38,38,0.25); }
+			.btn-factory:hover { background: rgba(220,38,38,0.25); border-color: rgba(220,38,38,0.5); }
+			.btn-factory:active { background: rgba(220,38,38,0.35); transform: scale(0.98); }
 			.ml-auto { margin-left: auto; }
 
 			input[type="text"], input[type="number"], input[type="search"], input[type="password"], select, textarea {
@@ -1278,7 +1313,7 @@
 
 			.ball-host { position: fixed; z-index: 9980; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; margin: 0; padding: 0; }
 			#cine-ctrl { display: none; }
-			#cine-ctrl.overlay-active ~ .ball-host { display: none !important; }
+			#cine-ctrl.overlay-active ~ .ball-host:not(.keep-visible) { display: none !important; }
 			.ball {
 				border-radius: 50%;
 				box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), var(--shadow-md);
@@ -1517,8 +1552,8 @@
 			}
 
 			/* 自定义 Tooltip */
-			.card-title[data-tip], .list-name[data-tip] { position: relative; }
-			.card-title[data-tip]:hover::after, .list-name[data-tip]:hover::after {
+			.card-title[data-tip], .list-name[data-tip], .nav-link-title[data-tip], .nav-link-desc[data-tip] { position: relative; }
+			.card-title[data-tip]:hover::after, .list-name[data-tip]:hover::after, .nav-link-title[data-tip]:hover::after, .nav-link-desc[data-tip]:hover::after {
 				content: attr(data-tip);
 				position: absolute; bottom: calc(100% + 6px); left: 0;
 				background: var(--surface-hi); border: 1px solid var(--border);
@@ -1558,52 +1593,101 @@
 				.show-card, .list-row, .platform-card { animation: none !important; }
 			}
 
+			/* 窄屏隐藏辅助类（桌面端无任何样式） */
+			.hide-narrow { }
+
 			/* 响应式适配 */
 			@media (max-width: 480px) {
-				.panel { border-radius: var(--radius) var(--radius) 0 0; }
+				.hide-narrow { display: none !important; }
+
+				/* ── 顶栏精简 ── */
 				.panel-head { padding: 10px 12px; }
 				.panel-head h2 { font-size: calc(var(--font-size) * 0.929); }
+
+				/* ── 底栏精简 ── */
+				.panel-foot { padding: 8px 12px; gap: 6px; }
+				#m-export, #m-import { display: none !important; }
+				#m-last-update { display: none !important; }
+				#m-foot-info { display: none !important; }
+
+				/* ── 面板基础 ── */
+				.panel { border-radius: var(--radius) var(--radius) 0 0; }
 				.panel-body { padding: 10px 12px; }
-				.panel-foot { padding: 10px 12px; }
+				.panel.edit-panel { width: 100vw; max-height: 92vh; border-radius: var(--radius) var(--radius) 0 0; }
 
-				.shows-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 6px; }
-				.card-inner { padding: 6px; }
-				.card-title { font-size: calc(var(--font-size) * 0.786); }
-				.card-actions .btn-icon { min-width: 32px; min-height: 32px; }
+				/* ── 标签栏横向滚动 ── */
+				.tabs { gap: 0; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 12px; }
+				.tabs::-webkit-scrollbar { display: none; }
+				.tab-btn { padding: 8px 10px; font-size: calc(var(--font-size) * 0.8); flex-shrink: 0; }
 
-				.toolbar { flex-wrap: wrap; gap: 4px; }
-				.search-wrap { flex: 1 1 100%; }
-				.search-wrap input { font-size: 16px; /* 防止 iOS 自动缩放 */ }
-				.filter-select { min-width: 52px; font-size: calc(var(--font-size) * 0.714); padding: 6px 4px; }
-
-				.tabs { gap: 0; }
-				.tab-btn { padding: 8px 12px; font-size: calc(var(--font-size) * 0.857); }
-
+				/* ── 按钮触控尺寸 ── */
 				.btn, .btn-ghost, .btn-primary { min-height: 40px; padding: 8px 12px; }
 				.btn-icon { min-width: 36px; min-height: 36px; }
 
-				.list-row { padding: 8px; gap: 8px; }
-				.list-thumb { width: 48px; height: 32px; }
+				/* ── 工具栏 ── */
+				.toolbar { flex-wrap: wrap; gap: 4px; }
+				.search-wrap { flex: 1 1 100%; }
+				.search-wrap input { font-size: 16px; /* 防止 iOS 自动缩放 */ }
+				.filter-select { min-width: 48px; font-size: calc(var(--font-size) * 0.714); padding: 5px 2px; }
 
-				.settings-layout { flex-direction: column; }
-				.settings-nav { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 6px 0; gap: 0; }
-				.settings-nav-section { display: none; }
-				.settings-nav-item { white-space: nowrap; padding: 8px 12px; border-left: none; border-bottom: 2px solid transparent; min-height: 40px; }
-				.settings-nav-item.active { border-left: none; border-bottom-color: var(--accent); }
-				.settings-content { padding: 10px 12px; }
+				/* ── 观看记录 ── */
+				.shows-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 4px; }
+				.card-inner { padding: 4px; }
+				.card-title { font-size: calc(var(--font-size) * 0.714); }
+				.card-actions .btn-icon { min-width: 32px; min-height: 32px; }
+				.list-row { padding: 6px; gap: 6px; }
+				.list-thumb { width: 40px; height: 28px; }
+				.list-title { font-size: calc(var(--font-size) * 0.857); }
+				.list-rating { display: none !important; }
+				.list-prog { display: none !important; }
+				.status-badge { font-size: calc(var(--font-size) * 0.643); padding: 1px 4px; }
+				.list-ep { font-size: calc(var(--font-size) * 0.714); }
+				.list-meta { gap: 4px; }
+				.list-actions .btn-icon { min-width: 30px; min-height: 30px; }
+				.list-actions .btn-inc { padding: 3px 5px; font-size: calc(var(--font-size) * 0.643); }
 
+				/* ── 观影平台 ── */
 				.platforms-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
-				.platform-card { padding: 8px; }
+				.platform-card { padding: 6px; }
+				.platform-card .plat-icon { width: 28px; height: 28px; }
+				.platform-card .plat-name { font-size: calc(var(--font-size) * 0.714); }
 
+				/* ── 设置页 ── */
+				.panel.settings-panel { min-height: 85vh; max-height: 90vh; width: 100vw; border-radius: var(--radius) var(--radius) 0 0; }
+				.settings-layout { flex-direction: column; }
+				.settings-nav { width: 100%; flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; border-right: none; border-bottom: 1px solid var(--border); padding: 0; gap: 0; }
+				.settings-nav::-webkit-scrollbar { display: none; }
+				.settings-nav-section { display: none; }
+				.settings-nav-item { white-space: nowrap; padding: 8px 10px; font-size: calc(var(--font-size) * 0.8); border-left: none; border-bottom: 2px solid transparent; min-height: 40px; flex-shrink: 0; }
+				.settings-nav-item.active { border-left: none; border-bottom-color: var(--accent); }
+				.settings-content { padding: 10px 12px; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+				.settings-card { width: 100%; box-sizing: border-box; }
+				.theme-swatch { width: 28px; height: 28px; }
+				.setting-inline-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+				.setting-inline-label { font-size: calc(var(--font-size) * 0.857); }
+
+				/* ── 表单 ── */
 				.form-row { flex-direction: column; }
+				.cb-row { justify-content: flex-start; }
 				.form-group input, .form-group select, .form-group textarea { font-size: 16px; /* 防止 iOS 自动缩放 */ }
+				.edit-panel .form-group { width: 100%; }
+				.edit-panel .form-group input,
+				.edit-panel .form-group select,
+				.edit-panel .form-group textarea { width: 100%; font-size: 16px; }
 
+				/* ── 统计栏 ── */
 				.stats-bar { gap: 2px; flex-wrap: wrap; justify-content: center; }
 				.stat-item { padding: 4px 6px; }
 
+				/* ── Toast ── */
+				.toast-host { left: 12px; right: 12px; bottom: 12px; align-items: stretch; }
+				.toast { max-width: none; font-size: calc(var(--font-size) * 0.857); }
+
+				/* ── 悬浮球 ── */
 				.ball { width: 44px !important; height: 44px !important; }
 			}
 			@media (min-width: 481px) and (max-width: 768px) {
+				.cloud-btn { display: none !important; }
 				.shows-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 				.settings-nav { width: 150px; min-width: 130px; }
 				.platforms-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
@@ -1613,6 +1697,7 @@
 			}
 
 			/* ── 网页导航 ── */
+			.nav-search-container { position: relative; flex: 1; min-width: 0; display: flex; }
 			.nav-search-combo {
 				display: flex; align-items: stretch; flex: 1; min-width: 0;
 				background: var(--surface-hi); border: 1px solid var(--border);
@@ -1622,6 +1707,44 @@
 			.nav-search-combo:focus-within {
 				border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim);
 			}
+			/* 搜索建议/历史下拉面板 */
+			.nav-suggest-wrap { flex: 1; min-width: 0; display: flex; }
+			.nav-suggest-dropdown {
+				position: absolute; top: 100%; left: 0; right: 0; z-index: 30;
+				background: var(--panel-bg, var(--surface)); border: 1px solid var(--border);
+				border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+				box-shadow: var(--shadow-md); max-height: 260px; overflow-y: auto;
+				display: none; margin-top: -1px;
+			}
+			.nav-suggest-dropdown.open { display: block; }
+			.nav-suggest-header {
+				display: flex; align-items: center; justify-content: space-between;
+				padding: 6px 10px; font-size: calc(var(--font-size) * 0.714);
+				color: var(--muted); border-bottom: 1px solid var(--border);
+				position: sticky; top: 0; background: inherit; z-index: 1;
+			}
+			.nav-suggest-header button {
+				background: transparent; border: none; color: var(--muted);
+				cursor: pointer; font-size: inherit; padding: 2px 4px;
+			}
+			.nav-suggest-header button:hover { color: var(--text); }
+			.nav-suggest-item {
+				display: flex; align-items: center; gap: 8px;
+				padding: 7px 10px; cursor: pointer; font-size: calc(var(--font-size) * 0.857);
+				color: var(--text); transition: background 0.1s;
+			}
+			.nav-suggest-item:hover, .nav-suggest-item.active { background: var(--accent-dim); }
+			.nav-suggest-item .suggest-icon { color: var(--muted); flex-shrink: 0; width: 14px; }
+			.nav-suggest-item .suggest-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			.nav-suggest-item .suggest-del {
+				color: var(--muted); cursor: pointer; padding: 2px; opacity: 0.4;
+				transition: opacity 0.15s; flex-shrink: 0;
+				display: inline-flex; align-items: center; justify-content: center;
+				width: 16px; height: 16px;
+			}
+			.nav-suggest-item .suggest-del svg { width: 12px; height: 12px; display: block; }
+			.nav-suggest-item:hover .suggest-del { opacity: 1; }
+			.nav-suggest-item .suggest-del:hover { color: #f87171; }
 			.nav-engine-sel {
 				display: flex; align-items: center; flex-shrink: 0;
 				border-right: 1px solid var(--border); position: relative;
@@ -1703,12 +1826,13 @@
 			.nav-link-icon img { width: 100%; height: 100%; object-fit: contain; }
 			.nav-link-title {
 				font-size: calc(var(--font-size) * 0.857); font-weight: 600; color: var(--text);
-				white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+				white-space: nowrap; overflow: clip; text-overflow: ellipsis;
 			}
 			.nav-link-desc {
 				font-size: calc(var(--font-size) * 0.714); color: var(--muted);
 				display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-				overflow: hidden; min-height: 2.4em; margin-top: 3px;
+				overflow: clip; margin-top: 3px; position: relative;
+				min-height: calc(1em * 2 * 1.4); line-height: 1.4;
 			}
 			.nav-link-cats {
 				display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px;
@@ -1718,13 +1842,49 @@
 				padding: 1px 6px; border-radius: 99px;
 				background: var(--accent-dim); color: var(--accent);
 			}
-			.nav-link-card .card-hover-ops {
-				position: absolute; top: 4px; right: 4px; display: flex; gap: 2px;
-				opacity: 0; transition: opacity 0.15s;
+			/* 卡片布局：上部(图标+标题+描述) */
+			.nlc-top { display: flex; align-items: flex-start; gap: 8px; }
+			.nlc-info { flex: 1; min-width: 0; }
+			/* 卡片布局：中部分类标签居中 */
+			.nlc-cats { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+			/* 卡片布局：底部操作栏 */
+			.nlc-actions {
+				display: flex; align-items: center; gap: 2px;
+				margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
 			}
-			.nav-link-card:hover .card-hover-ops { opacity: 1; }
-			.nav-link-card .card-hover-ops .btn-icon { padding: 3px; border-radius: 4px; border: none; box-shadow: none; }
-			.nav-link-card .card-hover-ops .btn-icon svg { width: 11px; height: 11px; }
+			.nlc-visit {
+				flex: 1; min-width: 0; padding: 4px; border-radius: 4px; border: 1px solid var(--border);
+				background: transparent; color: var(--muted); cursor: pointer;
+				display: flex; align-items: center; justify-content: center;
+				transition: all 0.15s; box-shadow: none;
+			}
+			.nlc-visit:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+			.nlc-visit svg { width: 13px; height: 13px; }
+			.nlc-ops { display: flex; gap: 2px; flex: 3; }
+			.nlc-ops .btn-icon { flex: 1; min-width: 0; padding: 4px; border-radius: 4px; border: 1px solid var(--border); box-shadow: none; }
+			.nlc-ops .btn-icon:hover { border-color: var(--accent); background: var(--accent-dim); }
+			.nlc-ops .btn-icon svg { width: 13px; height: 13px; }
+			/* 列表视图 */
+			.nav-links-list { display: flex; flex-direction: column; gap: 4px; }
+			.nav-link-row {
+				display: flex; align-items: center; gap: 10px;
+				padding: 4px 10px; border-radius: var(--radius);
+				background: var(--surface); border: 1px solid var(--border);
+				transition: all 0.15s; cursor: pointer;
+			}
+			.nav-link-row:hover { border-color: var(--accent); background: var(--surface-hi); }
+			.nlr-info { flex: 1; min-width: 0; }
+			.nlr-info .nav-link-title { font-size: calc(var(--font-size) * 0.857); }
+			.nlr-info .nav-link-desc { display: none; }
+			.nlr-cats { display: flex; gap: 3px; flex-wrap: wrap; flex-shrink: 0; }
+			.nlr-ops { display: flex; gap: 3px; flex-shrink: 0; }
+			.nlr-ops .btn-icon { padding: 6px; border-radius: 4px; border: 1px solid var(--border); box-shadow: none; }
+			.nlr-ops .btn-icon:hover { border-color: var(--accent); background: var(--accent-dim); }
+			.nlr-ops .btn-icon svg { width: 15px; height: 15px; }
+			/* 拖拽视觉反馈 */
+			.nav-link-card.drag-over, .nav-link-row.drag-over {
+				border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim);
+			}
 			.nav-link-fav-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 			.nav-link-fav-thumb {
 				width: 34px; height: 34px; border: 1.5px solid var(--border);
@@ -1753,9 +1913,10 @@
 				transform: scale(1.15);
 			}
 			@media (max-width: 480px) {
-				.nav-links-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
-				.n-cat-bar { gap: 3px; }
-				.n-cat-tab { padding: 5px 8px; font-size: calc(var(--font-size) * 0.786); }
+				.nav-links-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px; }
+				.n-cat-bar { gap: 2px; padding: 4px 0; }
+				.n-cat-tab { padding: 5px 8px; font-size: calc(var(--font-size) * 0.75); }
+				.navlink-card .nav-icon { width: 28px; height: 28px; }
 			}
 
 			/* ── 笔记模块 ── */
@@ -1881,6 +2042,22 @@
 			.timer-mode-tab { padding: 6px 14px; border-radius: calc(var(--radius-sm) - 2px); border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: calc(var(--font-size) * 0.857); font-family: inherit; transition: all 0.15s; }
 			.timer-mode-tab.active { background: var(--accent-dim); color: var(--accent); }
 			.timer-mode-tab:hover { color: var(--text); }
+
+			/* 快速记录模式 Tabs */
+			.qr-mode-tabs {
+				display: flex; gap: 2px; background: var(--surface);
+				border-radius: var(--radius-sm); padding: 3px;
+				justify-content: space-between; width: auto; margin: 0 auto 12px;
+			}
+			.qr-mode-tab {
+				padding: 6px 14px; border-radius: calc(var(--radius-sm) - 2px);
+				border: none; background: transparent; color: var(--muted);
+				cursor: pointer; font-size: calc(var(--font-size) * 0.857);
+				font-family: inherit; transition: all 0.15s; white-space: nowrap;
+			}
+			.qr-mode-tab.active { background: var(--accent-dim); color: var(--accent); }
+			.qr-mode-tab:hover { color: var(--text); }
+
 			.timer-display-area { text-align: center; padding: 20px 0; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
 			.timer-clock-date { font-size: calc(var(--font-size) * 1.20); color: var(--muted); margin-bottom: 30px; line-height: 1.4; }
 			.timer-clock-time { font-size: clamp(6em, min(12vw, 12vh), 8.5em); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 4px; white-space: nowrap; line-height: 1.5; }
@@ -1926,9 +2103,9 @@
 			.cal-nav { display: flex; gap: 4px; }
 			.cal-nav button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.15s; font-family: inherit; }
 			.cal-nav button:hover { border-color: var(--accent); color: var(--accent); }
-			.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+			.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; column-gap: 4px; }
 			.cal-weekday { text-align: center; font-size: calc(var(--font-size) * 0.714); color: var(--muted); padding: 4px 0; font-weight: 600; }
-			.cal-day { text-align: center; padding: 3px 2px; border-radius: var(--radius-sm); font-size: calc(var(--font-size) * 0.786); color: var(--text); cursor: pointer; position: relative; min-height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; transition: background 0.15s; }
+			.cal-day { text-align: center; padding: 5px 4px; border-radius: var(--radius-sm); font-size: calc(var(--font-size) * 0.786); color: var(--text); cursor: pointer; position: relative; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; transition: background 0.15s; }
 			.cal-day-num { font-size: calc(var(--font-size) * 0.786); line-height: 1.2; }
 			.cal-day-lunar { font-size: calc(var(--font-size) * 0.5); line-height: 1.1; color: var(--muted); white-space: nowrap; }
 			.cal-day-lunar.first-day { color: var(--muted); font-weight: 700; }
@@ -1949,11 +2126,32 @@
 			.cal-shows-content { display: none; margin-top: 4px; }
 			.cal-shows-content.expanded { display: block; }
 			#cal-main-area { min-height: 0; overflow-y: auto; }
-			/* 全部标注汇总 */
-			.cal-marks-summary { flex-shrink: 0; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
-			.cal-marks-header { display: flex; align-items: center; justify-content: space-between; }
-			.cal-marks-summary .cal-shows-toggle { font-size: calc(var(--font-size) * 0.786); font-weight: 600; }
-			.cal-marks-list { max-height: 80px; overflow-y: auto; }
+			/* 右侧面板Tab切换栏 */
+			.cal-right-header { font-size: calc(var(--font-size) * 0.929); font-weight: 600; color: var(--text); margin-bottom: 8px; flex-shrink: 0; }
+			.cal-right-tabs { display: flex; gap: 3px; background: var(--surface); border-radius: var(--radius-sm); padding: 3px; width: fit-content; margin: 0 auto 10px; flex-shrink: 0; }
+			.cal-right-tab { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: calc(var(--radius-sm) - 2px); border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: calc(var(--font-size) * 0.714); font-weight: 500; font-family: inherit; transition: all 0.15s; white-space: nowrap; box-shadow: none; }
+			.cal-right-tab svg { width: 13px; height: 13px; flex-shrink: 0; }
+			.cal-right-tab.active { background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #fff) 100%); color: var(--accent-text); box-shadow: 0 0 10px var(--accent-dim); }
+			.cal-right-tab:hover:not(.active) { color: var(--text); background: var(--surface-hi); }
+			/* 标注面板 */
+			.cal-right-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
+			.marks-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; width: 100%; }
+			.marks-title { font-size: calc(var(--font-size) * 0.857); font-weight: 600; color: var(--text); white-space: nowrap; }
+			.marks-view-btns { display: flex; gap: 2px; flex-shrink: 0; }
+			.marks-view-btn { width: 28px; height: 28px; border: none; background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all 0.15s; }
+			.marks-view-btn.active { background: var(--accent-dim); color: var(--accent); }
+			.marks-view-btn:hover { color: var(--text); }
+			.marks-view-btn svg { width: 16px; height: 16px; }
+			.marks-content { flex: 1; overflow-y: auto; min-height: 0; }
+			/* 标注筛选条 */
+			.marks-filter-bar { display: flex; gap: 4px; overflow-x: auto; flex-shrink: 0; margin-bottom: 8px; padding-bottom: 2px; }
+			.marks-filter-bar::-webkit-scrollbar { height: 0; }
+			.marks-filter-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: var(--radius-sm); font-size: calc(var(--font-size) * 0.714); font-weight: 500; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; font-family: inherit; flex-shrink: 0; }
+			.marks-filter-btn:hover { color: var(--text); border-color: var(--muted); }
+			.marks-filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+			.marks-filter-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+			/* 标注列表视图 */
+			.marks-list { display: flex; flex-direction: column; gap: 2px; }
 			.cal-mark-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: var(--radius-sm); transition: background 0.15s; font-size: calc(var(--font-size) * 0.786); cursor: pointer; }
 			.cal-mark-row:hover { background: var(--surface-hi); }
 			.cal-mark-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -1965,8 +2163,21 @@
 			.cal-mark-row:hover .cal-mark-edit { opacity: 1; }
 			.cal-mark-edit:hover { color: var(--accent); }
 			.cal-mark-edit svg { width: 12px; height: 12px; }
+			/* 标注卡片视图 */
+			.mark-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 2px; }
+			.mark-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; text-align: center; position: relative; transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+			.mark-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+			.mark-card-name { width: 100%; padding: 8px 10px; font-size: calc(var(--font-size) * 0.786); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.mark-card-number { font-size: calc(var(--font-size) * 2.5); font-weight: 700; color: var(--accent); line-height: 1.2; padding: 12px 10px 4px; }
+			.mark-card-date { font-size: calc(var(--font-size) * 0.643); color: var(--muted); padding: 4px 10px 10px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.mark-card.today-card .mark-card-number { color: var(--accent); font-size: calc(var(--font-size) * 1.8); }
+			.mark-card.past-card { opacity: 0.55; }
+			.mark-card.past-card .mark-card-number { color: var(--muted); }
+			.mark-card-edit { position: absolute; top: 6px; right: 6px; border: none; background: transparent; cursor: pointer; opacity: 0; transition: opacity 0.15s; padding: 2px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: rgba(255,255,255,0.7); }
+			.mark-card:hover .mark-card-edit { opacity: 1; }
+			.mark-card-edit:hover { color: #fff; }
+			.mark-card-edit svg { width: 12px; height: 12px; }
 			/* 待办清单 */
-			.cal-todo-date { font-size: calc(var(--font-size) * 0.929); font-weight: 600; color: var(--text); margin-bottom: 10px; flex-shrink: 0; }
 			.cal-todo-input-row { display: flex; gap: 6px; margin-bottom: 10px; flex-shrink: 0; }
 			.cal-todo-input-row input { flex: 1; }
 			.cal-todo-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; min-height: 0; }
@@ -2293,6 +2504,7 @@
 	function saveTimer() { GM_setValue(KEY_TIMER, state.timer); }
 	function saveTodos() { GM_setValue(KEY_TODOS, state.todos); }
 	function saveMarks() { GM_setValue(KEY_MARKS, state.marks); }
+	function saveSearchHistory() { GM_setValue(KEY_SEARCH_HISTORY, state.searchHistory); }
 	function clampDay(d) { const y = d.getFullYear(), m = d.getMonth(), max = new Date(y, m + 1, 0).getDate(); if (d.getDate() > max) d.setDate(max); return d; }
 
 	// ---------- WebDAV 同步 ----------
@@ -2631,6 +2843,45 @@
 			url: window.location.href,
 			rating: 0,
 			notes: '',
+		};
+	}
+
+	/** 从当前页面提取平台信息 */
+	function extractPlatformFromPage() {
+		const hostname = window.location.hostname;
+		const PLATFORM_MAP = {
+			'bilibili.com': { name: '哔哩哔哩', icon: '📺' },
+			'iqiyi.com': { name: '爱奇艺', icon: '🟢' },
+			'v.qq.com': { name: '腾讯视频', icon: '🐧' },
+			'youku.com': { name: '优酷', icon: '🔵' },
+			'youtube.com': { name: 'YouTube', icon: '▶️' },
+			'netflix.com': { name: 'Netflix', icon: '🎬' },
+			'disneyplus.com': { name: 'Disney+', icon: '✨' },
+			'hbomax.com': { name: 'HBO Max', icon: '🎭' },
+			'primevideo.com': { name: 'Prime Video', icon: '📦' },
+			'apple.com/tv': { name: 'Apple TV+', icon: '🍎' },
+			'mgtv.com': { name: '芒果TV', icon: '🥭' },
+			'pptv.com': { name: 'PPTV', icon: '📡' },
+			'le.com': { name: '乐视视频', icon: '📺' },
+			'acfun.cn': { name: 'AcFun', icon: '🍬' },
+		};
+		const matched = Object.entries(PLATFORM_MAP).find(([k]) => hostname.includes(k));
+		return {
+			name: matched ? matched[1].name : document.title,
+			url: window.location.href,
+			icon: matched ? matched[1].icon : '',
+		};
+	}
+
+	/** 从当前页面提取网页导航信息 */
+	function extractNavFromPage() {
+		const metaDesc = document.querySelector('meta[name="description"]')?.content
+			|| document.querySelector('meta[property="og:description"]')?.content
+			|| '';
+		return {
+			title: document.title,
+			url: window.location.href,
+			desc: metaDesc.slice(0, 100),
 		};
 	}
 
@@ -3295,19 +3546,26 @@
 			buildContent() {
 				return `
 					<div class="toolbar">
-						<div class="nav-search-combo">
-							<div class="nav-engine-sel">
-								<select id="n-engine"></select>
-								<button id="n-engine-manage" title="管理搜索引擎" style="display:none;padding:4px 6px;background:transparent;border:none;border-left:1px solid var(--border);cursor:pointer;color:var(--muted);line-height:1;">${I.gear}</button>
+						<div class="nav-search-container">
+							<div class="nav-search-combo">
+								<div class="nav-engine-sel">
+									<select id="n-engine"></select>
+								</div>
+								<div class="nav-suggest-wrap">
+									<div class="nav-search-input">
+										<input type="text" id="n-search" placeholder="站内搜索 或 回车全网搜索…" autocomplete="off">
+									</div>
+								</div>
+								<div class="nav-search-actions">
+									<button id="n-search-clear" title="清空" style="display:none;">${I.x}</button>
+									<button id="n-search-go" title="全网搜索">${I.search}</button>
+								</div>
 							</div>
-							<div class="nav-search-input">
-								<input type="text" id="n-search" placeholder="站内搜索 或 回车全网搜索…">
-							</div>
-							<div class="nav-search-actions">
-								<button id="n-search-clear" title="清空" style="display:none;">${I.x}</button>
-								<button id="n-search-go" title="全网搜索">${I.search}</button>
-							</div>
+							<div class="nav-suggest-dropdown" id="n-suggest-dropdown"></div>
 						</div>
+						<button class="btn btn-ghost" id="n-engine-manage" title="管理搜索引擎" style="display:none;padding:8px 10px;font-size:calc(var(--font-size)*0.786);color:var(--accent);flex-shrink:0;border:1px solid var(--border);border-radius:var(--radius-sm);">${I.gear} 管理引擎</button>
+						<button class="btn-icon ${state.settings.navView === 'grid' ? 'active' : ''}" id="n-vgrid" title="卡片视图">${I.grid}</button>
+						<button class="btn-icon ${state.settings.navView === 'list' ? 'active' : ''}" id="n-vlist" title="列表视图">${I.rows}</button>
 					</div>
 					<div class="n-cat-bar" id="n-cat-bar"></div>
 					<div id="n-links-container"></div>`;
@@ -3319,18 +3577,131 @@
 				const navSearchInput = panel.querySelector('#n-search');
 				const navSearchClear = panel.querySelector('#n-search-clear');
 				const navSearchGo = panel.querySelector('#n-search-go');
-				const doNavWebSearch = () => {
-					const q = navSearchInput.value.trim();
+				const dropdown = panel.querySelector('#n-suggest-dropdown');
+				let suggestActiveIdx = -1;
+				let suggestItems = [];
+
+				// ── 搜索历史管理 ──
+				const addHistory = (q) => {
 					if (!q) return;
+					const max = state.settings.maxSearchHistory ?? 10;
+					if (max <= 0) return;
+					state.searchHistory = state.searchHistory.filter(h => h !== q);
+					state.searchHistory.unshift(q);
+					if (state.searchHistory.length > max) state.searchHistory.length = max;
+					saveSearchHistory();
+				};
+				const removeHistory = (q) => {
+					state.searchHistory = state.searchHistory.filter(h => h !== q);
+					saveSearchHistory();
+				};
+
+				// ── 下拉面板渲染 ──
+				const renderDropdown = (items) => {
+					if (!items.length) { closeDropdown(); return; }
+					suggestItems = items;
+					suggestActiveIdx = -1;
+					dropdown.innerHTML = `
+						<div class="nav-suggest-header"><span>搜索历史</span><button id="n-suggest-clear-all" title="清空历史">清空</button></div>
+						${items.map((item, i) => `
+							<div class="nav-suggest-item" data-idx="${i}" data-val="${escapeHTML(item)}">
+								<span class="suggest-icon">🕐</span>
+								<span class="suggest-text">${escapeHTML(item)}</span>
+								<span class="suggest-del" data-del="${escapeHTML(item)}" title="删除">${I.x}</span>
+							</div>`).join('')}`;
+					dropdown.classList.add('open');
+					// 事件绑定
+					dropdown.querySelectorAll('.nav-suggest-item').forEach(el => {
+						el.addEventListener('mousedown', (e) => {
+							e.preventDefault();
+							const val = el.dataset.val;
+							navSearchInput.value = val;
+							closeDropdown();
+							addHistory(val);
+							doNavWebSearch(val);
+						});
+					});
+					dropdown.querySelectorAll('.suggest-del').forEach(el => {
+						el.addEventListener('mousedown', (e) => {
+							e.preventDefault(); e.stopPropagation();
+							removeHistory(el.dataset.del);
+							const q = navSearchInput.value.trim();
+							if (!q && state.settings.navHistoryEnabled !== false) {
+								renderDropdown(state.searchHistory.slice(0, state.settings.maxSearchHistory ?? 10));
+							}
+						});
+					});
+					const clearAllBtn = dropdown.querySelector('#n-suggest-clear-all');
+					if (clearAllBtn) clearAllBtn.addEventListener('mousedown', (e) => {
+						e.preventDefault(); state.searchHistory = []; saveSearchHistory(); closeDropdown();
+					});
+				};
+
+				const closeDropdown = () => { dropdown.classList.remove('open'); suggestItems = []; suggestActiveIdx = -1; };
+				const highlightItem = (idx) => {
+					dropdown.querySelectorAll('.nav-suggest-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+				};
+
+				// ── 搜索触发 ──
+				const doNavWebSearch = (query) => {
+					const q = (query || navSearchInput.value).trim();
+					if (!q) return;
+					addHistory(q);
 					const eng = state.navEngines.find(en => en.id === state.navActiveEngine);
 					if (eng?.url) window.open(eng.url.replace('{q}', encodeURIComponent(q)), '_blank', 'noopener,noreferrer');
 				};
+
+				// ── 输入事件 ──
 				if (navSearchInput) {
-					navSearchInput.oninput = debounce(() => { App.renderNavLinks(panel); if (navSearchClear) navSearchClear.style.display = navSearchInput.value ? 'flex' : 'none'; }, 180);
-					navSearchInput.onkeydown = (e) => { if (e.key === 'Enter') doNavWebSearch(); };
+					navSearchInput.oninput = debounce(() => {
+						App.renderNavLinks(panel);
+						if (navSearchClear) navSearchClear.style.display = navSearchInput.value ? 'flex' : 'none';
+						const q = navSearchInput.value.trim();
+						if (!q && state.settings.navHistoryEnabled !== false && state.searchHistory.length) {
+							renderDropdown(state.searchHistory.slice(0, state.settings.maxSearchHistory ?? 10));
+						} else { closeDropdown(); }
+					}, 180);
+
+					navSearchInput.onkeydown = (e) => {
+						if (!dropdown.classList.contains('open')) {
+							if (e.key === 'Enter') doNavWebSearch();
+							return;
+						}
+						if (e.key === 'ArrowDown') { e.preventDefault(); suggestActiveIdx = Math.min(suggestActiveIdx + 1, suggestItems.length - 1); highlightItem(suggestActiveIdx); }
+						else if (e.key === 'ArrowUp') { e.preventDefault(); suggestActiveIdx = Math.max(suggestActiveIdx - 1, -1); highlightItem(suggestActiveIdx); }
+						else if (e.key === 'Enter') {
+							e.preventDefault();
+							if (suggestActiveIdx >= 0 && suggestActiveIdx < suggestItems.length) {
+								navSearchInput.value = suggestItems[suggestActiveIdx];
+								closeDropdown();
+								addHistory(suggestItems[suggestActiveIdx]);
+							}
+							doNavWebSearch();
+						}
+						else if (e.key === 'Escape') { closeDropdown(); }
+					};
+
+					// 焦点事件：空输入时显示历史
+					navSearchInput.addEventListener('focus', () => {
+						const val = navSearchInput.value.trim();
+						if (!val && state.settings.navHistoryEnabled !== false && state.searchHistory.length) {
+							renderDropdown(state.searchHistory.slice(0, state.settings.maxSearchHistory ?? 10));
+						}
+					});
+					// 点击外部关闭
+					panel.addEventListener('mousedown', (e) => {
+						if (!dropdown.contains(e.target) && e.target !== navSearchInput) closeDropdown();
+					});
 				}
 				if (navSearchClear) { navSearchClear.onclick = () => { navSearchInput.value = ''; navSearchClear.style.display = 'none'; App.renderNavLinks(panel); navSearchInput.focus(); }; }
-				if (navSearchGo) navSearchGo.onclick = doNavWebSearch;
+				if (navSearchGo) navSearchGo.onclick = () => doNavWebSearch();
+				// 视图切换
+				const gridBtn = panel.querySelector('#n-vgrid');
+				const listBtn = panel.querySelector('#n-vlist');
+				if (gridBtn && listBtn) {
+					gridBtn.onclick = () => { state.settings.navView = 'grid'; saveSettings(); gridBtn.classList.add('active'); listBtn.classList.remove('active'); App.renderNavLinks(panel); };
+					listBtn.onclick = () => { state.settings.navView = 'list'; saveSettings(); listBtn.classList.add('active'); gridBtn.classList.remove('active'); App.renderNavLinks(panel); };
+				}
 			},
 			onActivate(panel, { bottomBtn, footInfo, App }) {
 				bottomBtn.innerHTML = `${I.plus} 添加网页`;
@@ -3350,7 +3721,7 @@
 							<div class="notes-sidebar-head">
 								<div class="search-wrap">${I.search}<input type="text" id="nt-search" placeholder="搜索笔记…"></div>
 								<button class="btn-icon" id="nt-search-clear" title="清空" style="display:none;">${I.x}</button>
-								<button class="btn btn-primary" id="nt-new" title="新建笔记" style="padding:6px 10px;">${I.plus}</button>
+								<button class="btn btn-primary" id="nt-new" title="新建笔记" style="padding:8px 10px;">${I.plus}</button>
 							</div>
 							<div class="notes-list" id="nt-list"></div>
 						</div>
@@ -3418,6 +3789,15 @@
 				bottomBtn.onclick = () => App.createNote(panel);
 				App.renderNotesList(panel);
 				footInfo.textContent = `${state.notes.length} 篇笔记`;
+				// 默认打开置顶笔记（若无置顶则打开最近编辑的笔记）
+				if (!App._currentNoteId && state.notes.length) {
+					const sorted = [...state.notes].sort((a, b) => {
+						if (a.pinned && !b.pinned) return -1;
+						if (!a.pinned && b.pinned) return 1;
+						return (b.updatedAt || 0) - (a.updatedAt || 0);
+					});
+					if (sorted[0]) App.openNote(sorted[0].id, panel);
+				}
 			},
 		},
 		timer: {
@@ -3906,6 +4286,9 @@
 			_selectedDay: 0,
 			_viewMode: 'month', // 'month' | 'year'
 			_yearGridCols: 4, // 4=4×3, 3=3×4, 6=6×2
+			_rightTab: 'marks', // 'marks' | 'todo'
+			_marksViewMode: 'list', // 'list' | 'card'
+			_marksFilter: 'all', // 'all' | typeId
 
 			buildContent() {
 				return `
@@ -3926,12 +4309,6 @@
 								</div>
 							</div>
 							<div id="cal-main-area"></div>
-							<div class="cal-marks-summary" id="cal-marks-summary">
-								<div class="cal-marks-header">
-									<div class="cal-shows-toggle" id="cal-marks-toggle">${I.tag} 全部标注 (<span id="cal-marks-count">0</span>) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
-								</div>
-								<div class="cal-marks-list" id="cal-marks-list"></div>
-							</div>
 							<div class="cal-shows-today" id="cal-shows">
 								<div class="cal-shows-toggle collapsed" id="cal-shows-toggle">${I.filter} 今日更新 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
 								<div class="cal-shows-content" id="cal-shows-content"></div>
@@ -3939,28 +4316,45 @@
 						</div>
 						<div class="cal-resizer" id="cal-resizer"></div>
 						<div class="cal-right">
-							<div class="cal-todo-date" id="cal-todo-date">今日待办</div>
-							<div class="cal-marks-bar" id="cal-marks-bar"></div>
-							<div class="cal-todo-input-row">
-								<input type="text" id="cal-todo-input" placeholder="添加待办事项…">
-								<button class="btn btn-primary" id="cal-todo-add" style="padding:6px 10px;">${I.plus}</button>
+							<div class="cal-right-header" id="cal-right-header">今日待办</div>
+							<div class="cal-right-tabs">
+								<button class="cal-right-tab active" data-rtab="marks">${I.tag} 标注</button>
+								<button class="cal-right-tab" data-rtab="todo">✓ 待办</button>
 							</div>
-							<div class="cal-todo-list" id="cal-todo-list"></div>
-							<div class="cal-todo-foot">
-								<span class="cal-todo-count" id="cal-todo-count"></span>
-								<div class="cal-todo-foot-wrap">
-									<div class="cal-todo-actions">
-										<button class="btn btn-danger" id="cal-todo-clear" style="font-size:calc(var(--font-size)*0.714);padding:6px 8px;">清空已完成</button>
-										<button class="btn btn-icon" id="cal-todo-menu-btn" title="更多操作" style="padding:4px;">⋯</button>
+							<div class="cal-right-panel" id="cal-right-marks" data-rtab="marks">
+								<div class="marks-toolbar">
+									<span class="marks-title" id="cal-marks-count-title">标注 (<span id="cal-marks-count">0</span>)</span>
+									<div class="marks-view-btns">
+										<button class="marks-view-btn active" data-mview="list" title="列表视图">${I.rows}</button>
+										<button class="marks-view-btn" data-mview="card" title="卡片视图">${I.grid}</button>
 									</div>
-									<div class="cal-todo-menu" id="cal-todo-menu">
-										<button class="cal-todo-menu-item danger" data-action="del-day">删除当日待办与标注</button>
-										<button class="cal-todo-menu-item danger" data-action="del-month">删除本月待办与标注</button>
-										<button class="cal-todo-menu-item danger" data-action="del-year">删除本年待办与标注</button>
-										<button class="cal-todo-menu-item danger" data-action="del-all">删除全部待办与标注</button>
-										<hr class="cal-todo-menu-sep">
-										<button class="cal-todo-menu-item" data-action="export">导出日程数据</button>
-										<button class="cal-todo-menu-item" data-action="import">导入日程数据</button>
+								</div>
+								<div class="marks-filter-bar" id="cal-marks-filter"></div>
+								<div class="marks-content" id="cal-marks-content"></div>
+							</div>
+							<div class="cal-right-panel" id="cal-right-todo" data-rtab="todo" style="display:none;">
+								<div class="cal-marks-bar" id="cal-marks-bar"></div>
+								<div class="cal-todo-input-row">
+									<input type="text" id="cal-todo-input" placeholder="添加待办事项…">
+									<button class="btn btn-primary" id="cal-todo-add" style="padding:6px 10px;">${I.plus}</button>
+								</div>
+								<div class="cal-todo-list" id="cal-todo-list"></div>
+								<div class="cal-todo-foot">
+									<span class="cal-todo-count" id="cal-todo-count"></span>
+									<div class="cal-todo-foot-wrap">
+										<div class="cal-todo-actions">
+											<button class="btn btn-danger" id="cal-todo-clear" style="font-size:calc(var(--font-size)*0.714);padding:6px 8px;">清空已完成</button>
+											<button class="btn btn-icon" id="cal-todo-menu-btn" title="更多操作" style="padding:4px;">⋯</button>
+										</div>
+										<div class="cal-todo-menu" id="cal-todo-menu">
+											<button class="cal-todo-menu-item danger" data-action="del-day">删除当日待办与标注</button>
+											<button class="cal-todo-menu-item danger" data-action="del-month">删除本月待办与标注</button>
+											<button class="cal-todo-menu-item danger" data-action="del-year">删除本年待办与标注</button>
+											<button class="cal-todo-menu-item danger" data-action="del-all">删除全部待办与标注</button>
+											<hr class="cal-todo-menu-sep">
+											<button class="cal-todo-menu-item" data-action="export">导出日程数据</button>
+											<button class="cal-todo-menu-item" data-action="import">导入日程数据</button>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -4057,17 +4451,30 @@
 					});
 				}
 
-				// 全部标注折叠
-				const marksToggle = panel.querySelector('#cal-marks-toggle');
-				if (marksToggle) {
-					marksToggle.addEventListener('click', () => {
-						const list = panel.querySelector('#cal-marks-list');
-						const isCollapsed = marksToggle.classList.contains('collapsed');
-						marksToggle.classList.toggle('collapsed', !isCollapsed);
-						marksToggle.classList.toggle('expanded', isCollapsed);
-						if (list) { list.style.display = isCollapsed ? '' : 'none'; }
-					});
-				}
+				// 右侧面板Tab切换
+				const rightTabs = panel.querySelectorAll('.cal-right-tab');
+				const switchRightTab = (tab) => {
+					self._rightTab = tab;
+					rightTabs.forEach(t => t.classList.toggle('active', t.dataset.rtab === tab));
+					const marksPanel = panel.querySelector('#cal-right-marks');
+					const todoPanel = panel.querySelector('#cal-right-todo');
+					if (marksPanel) marksPanel.style.display = tab === 'marks' ? '' : 'none';
+					if (todoPanel) todoPanel.style.display = tab === 'todo' ? '' : 'none';
+					if (tab === 'marks') self._renderMarksRight(panel);
+				};
+				rightTabs.forEach(t => t.addEventListener('click', () => switchRightTab(t.dataset.rtab)));
+
+				// 标注视图切换（列表/卡片）
+				const viewBtns = panel.querySelectorAll('.marks-view-btn');
+				const switchView = (mode) => {
+					self._marksViewMode = mode;
+					viewBtns.forEach(b => b.classList.toggle('active', b.dataset.mview === mode));
+					self._renderMarksRight(panel);
+				};
+				viewBtns.forEach(b => b.addEventListener('click', () => switchView(b.dataset.mview)));
+
+				// 初始化：根据状态激活正确的tab
+				switchRightTab(self._rightTab || 'marks');
 
 				// 待办清单事件
 				const todoInput = panel.querySelector('#cal-todo-input');
@@ -4113,7 +4520,7 @@
 						const dateKey = self._dateToKey(y, m, d);
 						const monthPrefix = `${y}-${String(m + 1).padStart(2, '0')}`;
 						const yearPrefix = `${y}`;
-						const refresh = () => { saveTodos(); saveMarks(); self._renderTodos(panel); self._renderCalendar(panel); self._renderMarksSummary(panel); };
+						const refresh = () => { saveTodos(); saveMarks(); self._renderTodos(panel); self._renderCalendar(panel); self._renderMarksRight(panel); };
 
 						if (action === 'del-day') {
 							const snapTodos = JSON.parse(JSON.stringify(state.todos[dateKey] || []));
@@ -4304,12 +4711,12 @@
 				const todos = state.todos[dateKey] || [];
 				const marks = state.marks[dateKey] || [];
 				const listEl = panel.querySelector('#cal-todo-list');
-				const dateEl = panel.querySelector('#cal-todo-date');
+				const dateEl = panel.querySelector('#cal-right-header');
 				const countEl = panel.querySelector('#cal-todo-count');
 				if (!listEl) return;
 
 				const lunar = solarToLunar(this._calendarYear, this._calendarMonth + 1, this._selectedDay);
-				dateEl.textContent = `${this._calendarMonth + 1}月${this._selectedDay}日 待办` + (lunar.month ? ` · ${lunar.month}${lunar.day}` : '');
+				dateEl.textContent = `${this._calendarMonth + 1}月${this._selectedDay}日` + (lunar.month ? ` · ${lunar.month}${lunar.day}` : '');
 
 				// 标注区域
 				const marksBar = panel.querySelector('#cal-marks-bar');
@@ -4319,15 +4726,16 @@
 					const diffDays = Math.ceil((targetDate - today) / 86400000);
 					const diffText = diffDays > 0 ? `还有${diffDays}天` : diffDays === 0 ? '就是今天' : `已过${-diffDays}天`;
 					let marksHtml = `<button class="cal-mark-add" id="cal-mark-add-btn">${I.tag} 标注此日</button>`;
-					marksHtml += marks.map(m =>
-						`<div class="cal-mark-badge" style="background:${m.color || '#6366f1'}"><span>${escapeHTML(m.label)}${m.repeat && m.repeat.every ? ' 🔁' : ''} · ${diffText}</span><button class="cal-mark-del" data-mark-id="${m.id}" title="删除标注">×</button></div>`
-					).join('');
+					marksHtml += marks.map(m => {
+						const mColor = this._getMarkType(m).color;
+						return `<div class="cal-mark-badge" style="background:${mColor}"><span>${escapeHTML(m.label)}${m.repeat && m.repeat.every ? ' 🔁' : ''} · ${diffText}</span><button class="cal-mark-del" data-mark-id="${m.id}" title="删除标注">×</button></div>`;
+					}).join('');
 					marksBar.innerHTML = marksHtml;
 					marksBar.querySelectorAll('.cal-mark-del').forEach(btn => {
 						btn.addEventListener('click', () => {
 							state.marks[dateKey] = marks.filter(m => m.id !== btn.dataset.markId);
 							if (!state.marks[dateKey].length) delete state.marks[dateKey];
-							saveMarks(); this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksSummary(panel);
+							saveMarks(); this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksRight(panel);
 						});
 					});
 					const addBtn = marksBar.querySelector('#cal-mark-add-btn');
@@ -4366,35 +4774,37 @@
 			_showMarkForm(panel) {
 				const marksBar = panel.querySelector('#cal-marks-bar');
 				if (!marksBar || marksBar.querySelector('.cal-mark-form')) return;
-				const COLORS = [{v:'#6366f1',n:'靛蓝'},{v:'#f472b6',n:'粉红'},{v:'#f59e0b',n:'琥珀'},{v:'#4ade80',n:'翠绿'},{v:'#38bdf8',n:'天蓝'},{v:'#f87171',n:'珊瑚红'},{v:'#a78bfa',n:'淡紫'}];
+				const markTypes = state.settings.dict.markTypes || DEFAULT_MARK_TYPES;
 				const form = document.createElement('div');
 				form.className = 'cal-mark-form';
-				form.innerHTML = `<input type="text" id="mark-label-input" placeholder="标注文字" style="flex:1;min-width:0;"><select id="mark-color-select" style="width:auto;min-width:0;flex-shrink:1;font-size:calc(var(--font-size)*0.786);padding:5px 4px;">${COLORS.map(c=>`<option value="${c.v}" style="background:${c.v};color:#fff;">${c.n}</option>`).join('')}</select><span class="cal-mark-preview" id="cal-mark-preview" style="width:20px;height:20px;border-radius:50%;background:${COLORS[0].v};flex-shrink:0;display:inline-block;border:2px solid var(--border);"></span><button class="btn btn-primary" style="padding:5px 10px;font-size:calc(var(--font-size)*0.786);flex-shrink:0;">添加</button><button class="btn btn-ghost" style="padding:5px 8px;font-size:calc(var(--font-size)*0.786);flex-shrink:0;">取消</button>`;
+				form.innerHTML = `<input type="text" id="mark-label-input" placeholder="标注文字" style="flex:1;min-width:0;"><select id="mark-type-select" style="width:auto;min-width:0;flex-shrink:1;font-size:calc(var(--font-size)*0.786);padding:5px 4px;">${markTypes.map(t=>`<option value="${t.id}" style="background:${t.color};color:#fff;">${t.name}</option>`).join('')}</select><span class="cal-mark-preview" id="cal-mark-preview" style="width:20px;height:20px;border-radius:50%;background:${markTypes[0].color};flex-shrink:0;display:inline-block;border:2px solid var(--border);"></span><button class="btn btn-primary" style="padding:5px 10px;font-size:calc(var(--font-size)*0.786);flex-shrink:0;">添加</button><button class="btn btn-ghost" style="padding:5px 8px;font-size:calc(var(--font-size)*0.786);flex-shrink:0;">取消</button>`;
 				marksBar.appendChild(form);
 				const input = form.querySelector('#mark-label-input');
-				const colorSelect = form.querySelector('#mark-color-select');
+				const typeSelect = form.querySelector('#mark-type-select');
 				const colorPreview = form.querySelector('#cal-mark-preview');
 				input.focus();
-				colorSelect.addEventListener('change', () => { colorPreview.style.background = colorSelect.value; });
+				typeSelect.addEventListener('change', () => {
+					const t = markTypes.find(t => t.id === typeSelect.value);
+					if (t) colorPreview.style.background = t.color;
+				});
 				form.querySelector('.btn-primary').addEventListener('click', () => {
 					const label = input.value.trim();
 					if (!label) { toast('请输入标注文字'); return; }
+					const selType = markTypes.find(t => t.id === typeSelect.value) || markTypes[0];
 					const dateKey = this._dateToKey(this._calendarYear, this._calendarMonth, this._selectedDay);
 					if (!state.marks[dateKey]) state.marks[dateKey] = [];
-					state.marks[dateKey].push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), label, color: colorSelect.value });
-					saveMarks(); this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksSummary(panel);
+					state.marks[dateKey].push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), label, typeId: selType.id, color: selType.color, calMode: 'solar' });
+					saveMarks(); this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksRight(panel);
 				});
 				form.querySelector('.btn-ghost').addEventListener('click', () => form.remove());
 				input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.querySelector('.btn-primary').click(); if (e.key === 'Escape') form.remove(); });
 			},
 
-			_renderMarksSummary(panel) {
-				const listEl = panel.querySelector('#cal-marks-list');
+			_renderMarksRight(panel) {
+				const contentEl = panel.querySelector('#cal-marks-content');
 				const countEl = panel.querySelector('#cal-marks-count');
-				const summaryEl = panel.querySelector('#cal-marks-summary');
-				if (!listEl) return;
-				if (this._viewMode === 'year') { if (summaryEl) summaryEl.style.display = 'none'; return; }
-				if (summaryEl) summaryEl.style.display = '';
+				const filterBar = panel.querySelector('#cal-marks-filter');
+				if (!contentEl) return;
 
 				const today = new Date(); today.setHours(0, 0, 0, 0);
 				const allMarks = [];
@@ -4404,25 +4814,86 @@
 					const diff = Math.ceil((target - today) / 86400000);
 					marks.forEach(mark => allMarks.push({ ...mark, dateKey: key, y, mo: m - 1, d, diff }));
 				});
-				allMarks.sort((a, b) => a.diff - b.diff);
-				if (countEl) countEl.textContent = allMarks.length;
-				if (!allMarks.length) { listEl.innerHTML = '<div style="padding:8px;font-size:calc(var(--font-size)*0.786);color:var(--muted);text-align:center;">暂无标注</div>'; return; }
+				allMarks.sort((a, b) => {
+					if (a.diff >= 0 && b.diff >= 0) return a.diff - b.diff;
+					if (a.diff >= 0) return -1;
+					if (b.diff >= 0) return 1;
+					return b.diff - a.diff;
+				});
 
-				listEl.innerHTML = allMarks.map(m => {
-					const diffText = m.diff > 0 ? `还有${m.diff}天` : m.diff === 0 ? '今天' : `已过${-m.diff}天`;
-					return `<div class="cal-mark-row" data-y="${m.y}" data-m="${m.mo}" data-d="${m.d}"><span class="cal-mark-dot" style="background:${m.color || '#6366f1'}"></span><span class="cal-mark-label">${escapeHTML(m.label)}${m.repeat && m.repeat.every ? ' 🔁' : ''}</span><span class="cal-mark-date">${m.mo + 1}/${m.d}</span><span class="cal-mark-diff${m.diff <= 0 ? ' past' : ''}">${diffText}</span><button class="cal-mark-edit" data-mark-id="${m.id}" data-date-key="${m.dateKey}" title="编辑">${I.edit}</button></div>`;
-				}).join('');
+				// 渲染筛选条
+				if (filterBar) {
+					const markTypes = state.settings.dict.markTypes || DEFAULT_MARK_TYPES;
+					const filter = this._marksFilter || 'all';
+					let fhtml = `<button class="marks-filter-btn${filter === 'all' ? ' active' : ''}" data-filter="all">全部</button>`;
+					fhtml += markTypes.map(t => {
+						const count = allMarks.filter(m => this._getMarkType(m).id === t.id).length;
+						if (!count) return '';
+						return `<button class="marks-filter-btn${filter === t.id ? ' active' : ''}" data-filter="${t.id}"><span class="marks-filter-dot" style="background:${t.color}"></span>${escapeHTML(t.name)}</button>`;
+					}).join('');
+					filterBar.innerHTML = fhtml;
+					filterBar.querySelectorAll('.marks-filter-btn').forEach(btn => {
+						btn.addEventListener('click', () => {
+							this._marksFilter = btn.dataset.filter;
+							this._renderMarksRight(panel);
+						});
+					});
+				}
 
-				listEl.querySelectorAll('.cal-mark-row').forEach(row => {
-					row.addEventListener('click', (e) => {
-						if (e.target.closest('.cal-mark-edit')) return;
-						this._calendarYear = parseInt(row.dataset.y);
-						this._calendarMonth = parseInt(row.dataset.m);
-						this._selectedDay = parseInt(row.dataset.d);
+				// 应用筛选
+				const filter = this._marksFilter || 'all';
+				const filtered = filter === 'all' ? allMarks : allMarks.filter(m => this._getMarkType(m).id === filter);
+				if (countEl) countEl.textContent = filtered.length;
+				if (!filtered.length) {
+					contentEl.innerHTML = '<div style="padding:24px 8px;font-size:calc(var(--font-size)*0.857);color:var(--muted);text-align:center;">暂无标注，点击下方按钮添加</div>';
+					return;
+				}
+
+				const viewMode = this._marksViewMode || 'list';
+				if (viewMode === 'card') {
+					contentEl.innerHTML = '<div class="mark-cards">' + filtered.map(m => {
+						const type = this._getMarkType(m);
+						const color = type.color;
+						const promptText = m.diff > 0 ? '还有' : m.diff === 0 ? '' : '已过';
+						const nameText = escapeHTML(m.label) + (promptText ? ' ' + promptText : '');
+						const numberText = m.diff === 0 ? '今天' : String(Math.abs(m.diff));
+						const dateText = this._formatMarkDate(m);
+						const cls = ['mark-card'];
+						if (m.diff === 0) cls.push('today-card');
+						if (m.diff < 0) cls.push('past-card');
+						return `<div class="${cls.join(' ')}" data-y="${m.y}" data-m="${m.mo}" data-d="${m.d}">
+							<div class="mark-card-name" style="background:${color};color:#fff;">${nameText}</div>
+							<div class="mark-card-number">${numberText}</div>
+							<div class="mark-card-date">${escapeHTML(dateText)}</div>
+							<button class="mark-card-edit" data-mark-id="${m.id}" data-date-key="${m.dateKey}" title="编辑">${I.edit}</button>
+						</div>`;
+					}).join('') + '</div>';
+				} else {
+					contentEl.innerHTML = '<div class="marks-list">' + filtered.map(m => {
+						const type = this._getMarkType(m);
+						const diffText = m.diff > 0 ? `还有${m.diff}天` : m.diff === 0 ? '今天' : `已过${-m.diff}天`;
+						return `<div class="cal-mark-row" data-y="${m.y}" data-m="${m.mo}" data-d="${m.d}"><span class="cal-mark-dot" style="background:${type.color}"></span><span class="cal-mark-label">${escapeHTML(m.label)}${m.repeat && m.repeat.every ? ' 🔁' : ''}</span><span class="cal-mark-date">${m.mo + 1}/${m.d}</span><span class="cal-mark-diff${m.diff <= 0 ? ' past' : ''}">${diffText}</span><button class="cal-mark-edit" data-mark-id="${m.id}" data-date-key="${m.dateKey}" title="编辑">${I.edit}</button></div>`;
+					}).join('') + '</div>';
+				}
+
+				// 公共事件：点击导航到对应日期
+				const clickSelector = viewMode === 'card' ? '.mark-card' : '.cal-mark-row';
+				contentEl.querySelectorAll(clickSelector).forEach(el => {
+					el.addEventListener('click', (e) => {
+						if (e.target.closest('.cal-mark-edit') || e.target.closest('.mark-card-edit')) return;
+						this._calendarYear = parseInt(el.dataset.y);
+						this._calendarMonth = parseInt(el.dataset.m);
+						this._selectedDay = parseInt(el.dataset.d);
 						this._renderCalendar(panel);
+						if (this._rightTab === 'marks') {
+							const todoTab = panel.querySelector('.cal-right-tab[data-rtab="todo"]');
+							if (todoTab) todoTab.click();
+						}
 					});
 				});
-				listEl.querySelectorAll('.cal-mark-edit').forEach(btn => {
+				// 编辑按钮
+				const editSelector = viewMode === 'card' ? '.mark-card-edit' : '.cal-mark-edit';
+				contentEl.querySelectorAll(editSelector).forEach(btn => {
 					btn.addEventListener('click', (e) => {
 						e.stopPropagation();
 						const markId = btn.dataset.markId;
@@ -4431,34 +4902,38 @@
 						if (mark) this._openMarkPanel(panel, mark, dateKey);
 					});
 				});
+			},
 
-				// 动态高度：用 cal-left 总高减去其他区域
-				const calLeft = panel.querySelector('.cal-left');
-				const calHeader = calLeft?.querySelector('.cal-header');
-				const gridEl = panel.querySelector('#cal-main-area');
-				const showsEl2 = panel.querySelector('#cal-shows');
-				const summaryHeader = panel.querySelector('.cal-marks-header');
-				if (calLeft && gridEl) {
-					const totalH = calLeft.offsetHeight;
-					const headerH = calHeader ? calHeader.offsetHeight : 0;
-					const gridH = gridEl.offsetHeight;
-					const summaryHeaderH = summaryHeader ? summaryHeader.offsetHeight : 0;
-					const showsH = showsEl2 ? showsEl2.offsetHeight : 0;
-					// 28px: cal-left padding(24) + marks-summary border/margin(4)
-					const available = totalH - headerH - gridH - summaryHeaderH - showsH - 28;
-					listEl.style.maxHeight = Math.max(60, available) + 'px';
+			_getMarkType(mark) {
+				const types = state.settings.dict.markTypes || DEFAULT_MARK_TYPES;
+				if (mark.typeId) return types.find(t => t.id === mark.typeId) || types[0];
+				// 旧数据回退：按颜色匹配
+				return types.find(t => t.color === mark.color) || { id: '', name: '未分类', color: mark.color || '#6366f1' };
+			},
+
+			_formatMarkDate(mark) {
+				const calMode = mark.calMode || (mark.repeat?.calendar === 'lunar' ? 'lunar' : 'solar');
+				const [y, m, d] = mark.dateKey.split('-').map(Number);
+				if (calMode === 'lunar') {
+					const lunar = solarToLunar(y, m, d);
+					if (lunar.month) return `${lunar.stem}${lunar.branch}（${lunar.lunarYear}）${lunar.month} ${lunar.day}`;
+					return `${y}-${m}-${d}`;
+				} else {
+					const weekdays = ['日','一','二','三','四','五','六'];
+					const dt = new Date(y, m - 1, d);
+					return `${y}-${m}-${d} 星期${weekdays[dt.getDay()]}`;
 				}
 			},
 
 			_openMarkPanel(panel, existingMark, editDateKey) {
 				if (!this._app) { toast('初始化中，请稍后重试'); return; }
 				const isEdit = !!existingMark;
-				const COLORS = [{v:'#6366f1',n:'靛蓝'},{v:'#f472b6',n:'粉红'},{v:'#f59e0b',n:'琥珀'},{v:'#4ade80',n:'翠绿'},{v:'#38bdf8',n:'天蓝'},{v:'#f87171',n:'珊瑚红'},{v:'#a78bfa',n:'淡紫'}];
+				const markTypes = state.settings.dict.markTypes || DEFAULT_MARK_TYPES;
+				const initType = isEdit ? this._getMarkType(existingMark) : markTypes[0];
 				const LUNAR_MONTH_NAMES = ['正','二','三','四','五','六','七','八','九','十','冬','腊'];
 				const LUNAR_DAY_NAMES = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
 				const now = new Date();
 				const curYear = now.getFullYear();
-				const initColor = existingMark?.color || COLORS[0].v;
 
 				// 编辑模式：解析已有日期
 				let initSolarY = curYear, initSolarM = now.getMonth() + 1, initSolarD = now.getDate();
@@ -4505,10 +4980,11 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="form-label">颜色</label>
+							<label class="form-label">事件类型</label>
 							<div style="display:flex;align-items:center;gap:8px;">
-								<select id="mp-color" style="flex:1;">${COLORS.map(c => `<option value="${c.v}" ${c.v===initColor?'selected':''}>${c.n}</option>`).join('')}</select>
-								<span id="mp-color-preview" style="width:24px;height:24px;border-radius:50%;background:${initColor};flex-shrink:0;border:2px solid var(--border);"></span>
+								<div class="cal-mark-colors" id="mp-type-picker">${markTypes.map(t => `<span class="cal-mark-color${t.id === initType.id ? ' active' : ''}" data-type-id="${t.id}" style="background:${t.color};" title="${t.name}"></span>`).join('')}</div>
+								<span id="mp-type-name" style="font-size:calc(var(--font-size)*0.786);color:var(--text);white-space:nowrap;">${escapeHTML(initType.name)}</span>
+								<button class="btn btn-ghost" id="mp-manage-types" style="padding:3px 6px;font-size:calc(var(--font-size)*0.643);margin-left:auto;white-space:nowrap;">管理</button>
 							</div>
 						</div>
 						<div class="form-group">
@@ -4530,11 +5006,41 @@
 				const labelInput = editPanel.querySelector('#mp-label');
 				const solarGroup = editPanel.querySelector('#mp-solar-group');
 				const lunarGroup = editPanel.querySelector('#mp-lunar-group');
-				const colorSel = editPanel.querySelector('#mp-color');
-				const colorPreview = editPanel.querySelector('#mp-color-preview');
+				let selectedTypeId = initType.id;
+				const typeNameEl = editPanel.querySelector('#mp-type-name');
 				const overlayEl = editPanel.closest('.overlay') || editPanel.parentNode;
 
-				colorSel.addEventListener('change', () => { colorPreview.style.background = colorSel.value; });
+				// 类型选择器事件
+				editPanel.querySelectorAll('.cal-mark-color').forEach(dot => {
+					dot.addEventListener('click', () => {
+						editPanel.querySelectorAll('.cal-mark-color').forEach(d => d.classList.remove('active'));
+						dot.classList.add('active');
+						selectedTypeId = dot.dataset.typeId;
+						const t = markTypes.find(t => t.id === selectedTypeId);
+						if (t && typeNameEl) typeNameEl.textContent = t.name;
+					});
+				});
+				// 管理类型按钮
+				editPanel.querySelector('#mp-manage-types')?.addEventListener('click', () => {
+					this._openMarkTypeManager(panel, editPanel, markTypes, (newTypes) => {
+						// 刷新类型选择器
+						markTypes.length = 0;
+						markTypes.push(...newTypes);
+						const pickerEl = editPanel.querySelector('#mp-type-picker');
+						if (pickerEl) {
+							pickerEl.innerHTML = markTypes.map(t => `<span class="cal-mark-color${t.id === selectedTypeId ? ' active' : ''}" data-type-id="${t.id}" style="background:${t.color};" title="${t.name}"></span>`).join('');
+							pickerEl.querySelectorAll('.cal-mark-color').forEach(dot => {
+								dot.addEventListener('click', () => {
+									pickerEl.querySelectorAll('.cal-mark-color').forEach(d => d.classList.remove('active'));
+									dot.classList.add('active');
+									selectedTypeId = dot.dataset.typeId;
+									const t = markTypes.find(t => t.id === selectedTypeId);
+									if (t && typeNameEl) typeNameEl.textContent = t.name;
+								});
+							});
+						}
+					});
+				});
 
 				// 自定义下拉（统一向下弹出，fixed 定位避免 overflow 裁切）
 				function _mkDD(sel, opts, initVal, onChange) {
@@ -4702,12 +5208,12 @@
 							const removed = marks.splice(idx, 1)[0];
 							if (!marks.length) delete state.marks[editDateKey];
 							saveMarks(); close();
-							this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksSummary(panel);
+							this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksRight(panel);
 							showUndoToast(`已删除标注「${removed.label}」`, () => {
 								if (!state.marks[editDateKey]) state.marks[editDateKey] = [];
 								state.marks[editDateKey].push(removed);
 								saveMarks();
-								this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksSummary(panel);
+								this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksRight(panel);
 							});
 						}
 					};
@@ -4753,9 +5259,10 @@
 							repeat.lunarIsLeap = lmVal.startsWith('L');
 							repeat.lunarDay = parseInt(lunarDayDD.value);
 						}
-						state.marks[newDateKey].push({ id: existingMark.id, label, color: colorSel.value, repeat });
+						const typeColor = (markTypes.find(t => t.id === selectedTypeId) || markTypes[0]).color;
+						state.marks[newDateKey].push({ id: existingMark.id, label, typeId: selectedTypeId, color: typeColor, repeat, calMode: mode });
 						saveMarks(); close();
-						this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksSummary(panel);
+						this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksRight(panel);
 						toast(`已更新「${label}」`);
 					} else {
 						// 添加模式
@@ -4770,13 +5277,96 @@
 							repeat.lunarIsLeap = lmVal.startsWith('L');
 							repeat.lunarDay = parseInt(lunarDayDD.value);
 						}
-						state.marks[newDateKey].push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), label, color: colorSel.value, repeat });
+						const typeColor = (markTypes.find(t => t.id === selectedTypeId) || markTypes[0]).color;
+						state.marks[newDateKey].push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), label, typeId: selectedTypeId, color: typeColor, repeat, calMode: mode });
 						saveMarks(); close();
-						this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksSummary(panel);
+						this._renderTodos(panel); this._renderCalendar(panel); this._renderMarksRight(panel);
 						toast(`已标注「${label}」`);
 					}
 				};
 				labelInput.focus();
+			},
+
+			_openMarkTypeManager(panel, parentPanel, markTypes, onSaved) {
+				if (!this._app) return;
+				const draft = JSON.parse(JSON.stringify(markTypes));
+				const { ov, panel: mgrPanel } = this._app.makeOverlay('mark-type-mgr', `
+					<div class="panel-head">
+						<div class="head-logo">${I.tag}</div>
+						<h2>管理标注类型</h2>
+						<button class="btn-icon" id="mtm-close">${I.x}</button>
+					</div>
+					<div class="panel-body" style="max-height:60vh;overflow-y:auto;">
+						<div id="mtm-list"></div>
+						<button class="btn btn-ghost" id="mtm-add" style="margin-top:8px;">${I.plus} 添加类型</button>
+					</div>
+					<div class="panel-foot">
+						<button class="btn btn-ghost" id="mtm-cancel">取消</button>
+						<button class="btn btn-primary" id="mtm-save">${I.check} 保存</button>
+					</div>
+				`, { panelClass: ' edit-panel' });
+
+				const listEl = mgrPanel.querySelector('#mtm-list');
+				const close = () => { this._app.closeOverlay('mark-type-mgr'); };
+
+				function render() {
+					listEl.innerHTML = draft.map((t, i) => `
+						<div class="tag-row" draggable="true" data-idx="${i}" style="border-bottom:1px solid var(--border);">
+							<span style="cursor:grab;color:var(--muted);font-size:16px;flex-shrink:0;">⠿</span>
+							<input type="color" value="${t.color}" data-idx="${i}" class="mtm-color" style="width:28px;height:28px;border:none;padding:0;cursor:pointer;flex-shrink:0;border-radius:50%;">
+							<input type="text" value="${escapeHTML(t.name)}" data-idx="${i}" class="mtm-name" style="flex:1;min-width:0;" placeholder="类型名称">
+							<button class="btn-icon mtm-del" data-idx="${i}" style="flex-shrink:0;" ${draft.length <= 1 ? 'disabled title="至少保留一个类型"' : ''}>${I.trash}</button>
+						</div>
+					`).join('');
+
+					// 名称输入
+					listEl.querySelectorAll('.mtm-name').forEach(inp => {
+						inp.addEventListener('input', () => { draft[parseInt(inp.dataset.idx)].name = inp.value; });
+					});
+					// 颜色选择
+					listEl.querySelectorAll('.mtm-color').forEach(inp => {
+						inp.addEventListener('input', () => { draft[parseInt(inp.dataset.idx)].color = inp.value; });
+					});
+					// 删除
+					listEl.querySelectorAll('.mtm-del').forEach(btn => {
+						btn.addEventListener('click', () => {
+							if (draft.length <= 1) { toast('至少保留一个类型'); return; }
+							draft.splice(parseInt(btn.dataset.idx), 1);
+							render();
+						});
+					});
+					// 拖拽排序
+					listEl.querySelectorAll('.tag-row').forEach(row => {
+						row.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', row.dataset.idx); row.style.opacity = '0.4'; });
+						row.addEventListener('dragend', () => { row.style.opacity = '1'; });
+						row.addEventListener('dragover', (e) => { e.preventDefault(); row.style.borderTop = '2px solid var(--accent)'; });
+						row.addEventListener('dragleave', () => { row.style.borderTop = ''; });
+						row.addEventListener('drop', (e) => {
+							e.preventDefault(); row.style.borderTop = '';
+							const from = parseInt(e.dataTransfer.getData('text/plain'));
+							const to = parseInt(row.dataset.idx);
+							if (from !== to) { const [item] = draft.splice(from, 1); draft.splice(to, 0, item); render(); }
+						});
+					});
+				}
+
+				render();
+				mgrPanel.querySelector('#mtm-close').onclick = close;
+				mgrPanel.querySelector('#mtm-cancel').onclick = close;
+				mgrPanel.querySelector('#mtm-add').onclick = () => {
+					draft.push({ id: 'mt_' + Date.now(), name: '新类型', color: '#a78bfa' });
+					render();
+					listEl.lastChild?.scrollIntoView({ behavior: 'smooth' });
+				};
+				mgrPanel.querySelector('#mtm-save').onclick = () => {
+					const valid = draft.filter(t => t.id && t.name);
+					state.settings.dict.markTypes = valid.length ? valid : [...DEFAULT_MARK_TYPES];
+					saveSettings();
+					close();
+					if (onSaved) onSaved(state.settings.dict.markTypes);
+					this._renderMarksRight(panel);
+					toast('标注类型已保存');
+				};
 			},
 
 			// ── 月视图 ──
@@ -4866,7 +5456,7 @@
 					});
 				});
 				this._renderTodos(panel);
-				this._renderMarksSummary(panel);
+				this._renderMarksRight(panel);
 			},
 
 			// ── 年视图 ──
@@ -5722,7 +6312,10 @@
 			ov.setAttribute('aria-label', opts.ariaLabel || '面板');
 			const panel = document.createElement('div'); panel.className = 'panel' + (opts.panelClass || '');
 			panel.innerHTML = content; ov.appendChild(panel); this.shadow.appendChild(ov); this.overlays[id] = ov;
-			if (this.ctrlEl) this.ctrlEl.classList.add('overlay-active');
+			if (this.ctrlEl) {
+				this.ctrlEl.classList.add('overlay-active');
+				if (state.settings.hideBallOnPanel === false && this.ballEl) this.ballEl.classList.add('keep-visible');
+			}
 
 			requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('open')));
 			ov.addEventListener('mousedown', e => {
@@ -5806,6 +6399,7 @@
 			setTimeout(() => ov.remove(), 280);
 			if (this.ctrlEl && !this.shadow.querySelector('.overlay.open')) {
 				this.ctrlEl.classList.remove('overlay-active');
+				if (this.ballEl) this.ballEl.classList.remove('keep-visible');
 			}
 		},
 		closeAll() { Object.keys(this.overlays).forEach(id => this.closeOverlay(id)); },
@@ -5904,13 +6498,13 @@
 			const { ov, panel } = this.makeOverlay('main', `
 				<div class="panel-head">
 					<div class="head-logo">${I.compass}</div>
-					<h2>万象 · <span style="color:var(--accent)">Omni Trail</span></h2>
-					<button class="btn-icon" id="m-darkmode" title="切换深浅色">${isDark() ? I.sun : I.moon}</button>
-					<button class="btn-icon" id="m-pin" title="置顶面板">${I.pin}</button>
+					<h2>万象 · <span class="hide-narrow" style="color:var(--accent)">Omni Trail</span></h2>
+					<button class="btn-icon hide-narrow" id="m-darkmode" title="切换深浅色">${isDark() ? I.sun : I.moon}</button>
+					<button class="btn-icon hide-narrow" id="m-pin" title="置顶面板">${I.pin}</button>
 					<button class="btn-icon cloud-btn accent-text" id="m-cloudsync-upload" title="备份当前数据到云端 (WebDAV)" >${I.cloudUpload}</button>
 					<button class="btn-icon cloud-btn accent-text" id="m-cloudsync-download" title="从云端恢复数据 (WebDAV)" >${I.cloudDownload}</button>
 					<button class="btn-icon" id="m-settings" title="助手设置">${I.gear}</button>
-					<button class="btn-icon" id="m-maximize" title="最大化"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+					<button class="btn-icon hide-narrow" id="m-maximize" title="最大化"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
 					<button class="btn-icon" id="m-close" title="关闭">${I.x}</button>
 				</div>
 				<div class="panel-body">
@@ -5943,6 +6537,11 @@
 				bottomBtn.style.display = '';
 				bottomBtn.disabled = false;
 				TAB_REGISTRY[target]?.onActivate?.(panel, tabCtx);
+				// 移动端：激活标签滚动到可视区域
+				if (window.innerWidth <= 480) {
+					const activeBtn = panel.querySelector('.tab-btn.active');
+					activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+				}
 			};
 			tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
 			// 每个 tab 模块绑定事件
@@ -6306,22 +6905,412 @@
 		},
 
 		openRecord(forceClean = null) {
-			const rawData = extractFromPage();
-			const useClean = forceClean !== null ? forceClean : state.settings.autoCleanTitle;
-			if (useClean) rawData.name = cleanTitle(rawData.name);
-			rawData._candidates = rawData.candidates || [];
-			rawData.coverUrl = ''; // 不自动填入封面，避免覆盖用户精心挑选的封面
+			const mode = state.settings.quickRecordMode || 'show';
+			this.openQuickRecordPanel(mode, forceClean);
+		},
 
-			// 自动匹配已有记录的类型和总集数（避免每次手动修改）
-			if (rawData.name) {
-				const existingShow = state.shows.find(s => s.name === rawData.name);
-				if (existingShow) {
-					rawData.type = existingShow.type;
-					rawData.latestEpisode = existingShow.latestEpisode;
-				}
+		/** 快速记录多模式面板 */
+		openQuickRecordPanel(initMode, forceClean) {
+			const useClean = forceClean !== null ? forceClean : state.settings.autoCleanTitle;
+
+			// ── 提取三种模式的数据 ──
+			const showRaw = extractFromPage();
+			const showRawClean = { ...showRaw, name: useClean ? cleanTitle(showRaw.name) : showRaw.name };
+			showRawClean._candidates = showRawClean.candidates || [];
+			showRawClean.coverUrl = '';
+			if (showRawClean.name) {
+				const ex = state.shows.find(s => s.name === showRawClean.name);
+				if (ex) { showRawClean.type = ex.type; showRawClean.latestEpisode = ex.latestEpisode; }
+			}
+			const platRaw = extractPlatformFromPage();
+			const platRawClean = { ...platRaw, name: useClean ? cleanTitle(platRaw.name) : platRaw.name };
+			const navRaw = extractNavFromPage();
+			const navRawClean = { ...navRaw, title: useClean ? cleanTitle(navRaw.title) : navRaw.title };
+
+			// ── 平台分类选项 ──
+			const platCatOpts = state.platformCategories.map(c =>
+				`<option value="${c.id}" ${c.id === 'mainstream' ? 'selected' : ''}>${c.name}</option>`
+			).join('');
+
+			// ── 导航分类 checkboxes ──
+			const navCatCbs = state.navCategories.map(c =>
+				`<label style="display:flex;align-items:center;gap:5px;padding:3px 5px;border-radius:6px;cursor:pointer;font-size:calc(var(--font-size)*0.857);color:var(--text);user-select:none;"><input type="checkbox" value="${c.id}" ${c.id === 'recent' ? 'checked' : ''} style="accent-color:var(--accent);"> ${escapeHTML(c.icon || '')}${escapeHTML(c.name)}</label>`
+			).join('');
+
+			// ── 剧集类型选项 ──
+			const typeOptionsHtml = state.settings.dict.types.map(t => {
+				const tn = typeof t === 'string' ? t : t.name;
+				return `<option value="${escapeHTML(tn)}" ${(showRawClean.type === tn) ? 'selected' : ''}>${escapeHTML(tn)}</option>`;
+			}).join('');
+
+			const html = `
+				<div class="panel-head">
+					<div class="head-logo">${I.zap}</div>
+					<h2>快速记录</h2>
+					<button class="btn-icon" id="qr-close">${I.x}</button>
+				</div>
+				<div class="panel-body">
+					<div class="qr-mode-tabs" id="qr-tabs">
+						<button class="qr-mode-tab ${initMode === 'show' ? 'active' : ''}" data-qrmode="show">📺 记录剧集</button>
+						<button class="qr-mode-tab ${initMode === 'platform' ? 'active' : ''}" data-qrmode="platform">📡 记录平台</button>
+						<button class="qr-mode-tab ${initMode === 'nav' ? 'active' : ''}" data-qrmode="nav">🌐 记录网页</button>
+					</div>
+
+					<!-- 提取信息卡片 -->
+					<div class="extract-card" id="qr-extract-card">
+						<div class="extract-icon">${I.eye}</div>
+						<div>
+							<div class="extract-text">已从当前页面提取信息</div>
+							<div class="extract-url" id="qr-extract-url">${escapeHTML(window.location.href)}</div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="cb-row"><input type="checkbox" id="qr-auto-clean" ${useClean ? 'checked' : ''}> 启用正则清洗</label>
+					</div>
+
+					<!-- Mode A: 记录剧集 -->
+					<div class="qr-mode-panel" data-qrmode="show" ${initMode !== 'show' ? 'style="display:none;"' : ''}>
+						<div class="form-row">
+							<div class="form-group" style="flex:2">
+								<label class="form-label required">剧名</label>
+								<div class="inline-row">
+									<input type="text" id="e-name" value="${escapeHTML(showRawClean.name || '')}" placeholder="剧集名称" class="flex-1">
+									<button class="btn-icon" id="e-search-meta" title="搜索元数据">${I.search}</button>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">类型</label>
+								<select id="e-type">${typeOptionsHtml}</select>
+							</div>
+						</div>
+						<div id="qr-s-name-warning" style="display:none;margin-bottom:8px;"></div>
+						<div class="form-row" style="align-items:flex-end;">
+							<div class="form-group" style="flex:2;">
+								<label class="form-label">当前集数</label>
+								<div style="display:flex;gap:4px;align-items:center;">
+									<input type="number" id="e-currep" value="${showRawClean.currentEpisode || 1}" min="0" style="flex:1;text-align:center;">
+									<button type="button" class="btn-icon accent-btn" id="e-ep-dec">−1</button>
+									<button type="button" class="btn-icon accent-btn" id="e-ep-inc">+1</button>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">总集数</label>
+								<input type="number" id="e-total" value="${showRawClean.latestEpisode || ''}">
+							</div>
+						</div>
+						${Array.isArray(showRawClean._candidates) && showRawClean._candidates.length > 1 ? '<div id="e-ep-candidates" style="display:flex;gap:4px;margin-top:-2px;margin-bottom:6px;flex-wrap:wrap;"></div>' : '<div id="e-ep-candidates" style="display:none;"></div>'}
+						<div class="form-group">
+							<label class="form-label">封面图片 URL（可选）</label>
+							<div class="inline-row">
+								<input type="text" id="e-cover" value="" placeholder="留空自动生成占位封面" class="flex-1">
+								<button class="btn-icon" id="e-cover-picker" title="从页面选择封面">${I.image}</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Mode B: 记录平台 -->
+					<div class="qr-mode-panel" data-qrmode="platform" ${initMode !== 'platform' ? 'style="display:none;"' : ''}>
+						<div class="form-group">
+							<label class="form-label required">名称</label>
+							<input type="text" id="qr-p-name" value="${escapeHTML(platRawClean.name || '')}" placeholder="平台名称">
+						</div>
+						<div class="form-group">
+							<label class="form-label required">URL</label>
+							<input type="text" id="qr-p-url" value="${escapeHTML(platRaw.url || '')}" placeholder="平台网址" class="proto-target">
+						</div>
+						<div class="form-group">
+							<label class="form-label">分类</label>
+							<select id="qr-p-cat">${platCatOpts}</select>
+						</div>
+						<div id="qr-p-name-warning" style="display:none;margin-bottom:8px;"></div>
+					</div>
+
+					<!-- Mode C: 记录网页 -->
+					<div class="qr-mode-panel" data-qrmode="nav" ${initMode !== 'nav' ? 'style="display:none;"' : ''}>
+						<div class="form-group">
+							<label class="form-label required">标题</label>
+							<input type="text" id="qr-n-title" value="${escapeHTML(navRawClean.title || '')}" placeholder="网站标题">
+						</div>
+						<div class="form-group">
+							<label class="form-label required">URL</label>
+							<input type="text" id="qr-n-url" value="${escapeHTML(navRaw.url || '')}" placeholder="网址" class="proto-target">
+						</div>
+						<div class="form-group">
+							<label class="form-label">描述</label>
+							<input type="text" id="qr-n-desc" value="${escapeHTML(navRaw.desc || '')}" maxlength="100" placeholder="一句话介绍">
+						</div>
+						<div class="form-group">
+							<label class="form-label">所属分类</label>
+							<div id="qr-n-cats" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;max-height:120px;overflow-y:auto;">${navCatCbs}</div>
+						</div>
+						<div id="qr-n-name-warning" style="display:none;margin-bottom:8px;"></div>
+					</div>
+				</div>
+				<div class="panel-foot">
+					<button class="btn btn-ghost" id="qr-cancel">取消</button>
+					<button class="btn btn-ghost" id="qr-reparse">${I.zap} 重新解析</button>
+					<button class="btn btn-icon" id="qr-open-main" title="打开管理面板">${I.compass}</button>
+					<button class="btn btn-primary ml-auto" id="qr-save">${I.check} 保存</button>
+				</div>`;
+
+			const { ov, panel } = this.makeOverlay('quick-record', html, { panelClass: ' edit-panel' });
+			this.bindQuickRecordEvents(panel, { showRaw, showRawClean, platRaw, platRawClean, navRaw, navRawClean }, useClean);
+		},
+
+		/** 绑定快速记录多模式面板事件 */
+		bindQuickRecordEvents(panel, rawData, useClean) {
+			const self = this;
+			let currentMode = state.settings.quickRecordMode || 'show';
+
+			// ── Mode Tab 切换 ──
+			const tabs = panel.querySelectorAll('.qr-mode-tab');
+			const panels = panel.querySelectorAll('.qr-mode-panel');
+			const switchMode = (m) => {
+				currentMode = m;
+				state.settings.quickRecordMode = m;
+				tabs.forEach(t => t.classList.toggle('active', t.dataset.qrmode === m));
+				panels.forEach(p => p.style.display = p.dataset.qrmode === m ? '' : 'none');
+			};
+			tabs.forEach(t => t.addEventListener('click', () => switchMode(t.dataset.qrmode)));
+
+			// ── URL 协议输入组件 ──
+			panel.querySelectorAll('.proto-target').forEach(input => {
+				createProtocolInput(input, 'https://');
+			});
+
+			// ── 标题正则清洗切换（所有模式） ──
+			const autoCleanCb = panel.querySelector('#qr-auto-clean');
+			if (autoCleanCb) {
+				autoCleanCb.addEventListener('change', () => {
+					const on = autoCleanCb.checked;
+					const nameInput = panel.querySelector('#e-name');
+					if (nameInput) nameInput.value = on ? cleanTitle(rawData.showRaw.name) : rawData.showRaw.name;
+					const pNameInput = panel.querySelector('#qr-p-name');
+					if (pNameInput) pNameInput.value = on ? cleanTitle(rawData.platRaw.name) : rawData.platRaw.name;
+					const nTitleInput = panel.querySelector('#qr-n-title');
+					if (nTitleInput) nTitleInput.value = on ? cleanTitle(rawData.navRaw.title) : rawData.navRaw.title;
+				});
 			}
 
-			this.openEdit(rawData, true, useClean, false);
+			// ── 模式A: 集数 ±1 ──
+			const curEpInput = panel.querySelector('#e-currep');
+			const decBtn = panel.querySelector('#e-ep-dec');
+			const incBtn = panel.querySelector('#e-ep-inc');
+			if (decBtn) decBtn.onclick = () => { curEpInput.value = Math.max(0, (parseInt(curEpInput.value) || 1) - 1); };
+			if (incBtn) incBtn.onclick = () => { curEpInput.value = (parseInt(curEpInput.value) || 0) + 1; };
+
+			// ── 模式A: 集数候选 ──
+			const candContainer = panel.querySelector('#e-ep-candidates');
+			if (candContainer && Array.isArray(rawData.showRawClean._candidates) && rawData.showRawClean._candidates.length > 1) {
+				rawData.showRawClean._candidates.forEach((num, i) => {
+					const btn = document.createElement('button');
+					btn.type = 'button'; btn.className = 'btn-ghost';
+					btn.style.cssText = 'padding:3px 8px;font-size:calc(var(--font-size)*0.786);';
+					btn.textContent = `第${num}集`;
+					if (i === 0) btn.style.borderColor = 'var(--accent)';
+					btn.addEventListener('click', () => {
+						curEpInput.value = num;
+						candContainer.querySelectorAll('button').forEach(b => { b.style.borderColor = 'var(--border)'; b.style.background = 'transparent'; });
+						btn.style.borderColor = 'var(--accent)'; btn.style.background = 'var(--accent-dim)';
+					});
+					candContainer.appendChild(btn);
+				});
+			}
+
+			// ── 模式A: 封面选择器 ──
+			const coverPickerBtn = panel.querySelector('#e-cover-picker');
+			if (coverPickerBtn) {
+				coverPickerBtn.addEventListener('click', () => {
+					const kw = panel.querySelector('#e-name')?.value.trim() || rawData.showRawClean.name || '';
+					self.openCoverPicker(kw, (url) => { const ci = panel.querySelector('#e-cover'); if (ci) ci.value = url; });
+				});
+			}
+
+			// ── 模式A: 元数据搜索 ──
+			const searchBtn = panel.querySelector('#e-search-meta');
+			if (searchBtn) {
+				searchBtn.addEventListener('click', () => {
+					const kw = panel.querySelector('#e-name')?.value.trim() || rawData.showRawClean.name || '';
+					if (!kw) { toast('请先输入剧名'); return; }
+					self.openMetadataSearch(kw, panel, rawData.showRaw);
+				});
+			}
+
+			// ── 模式A: 重名检测 ──
+			const nameInput = panel.querySelector('#e-name');
+			const typeSelect = panel.querySelector('#e-type');
+			const nameWarn = panel.querySelector('#qr-s-name-warning');
+			if (nameInput && typeSelect && nameWarn) {
+				const checkDup = () => {
+					const n = nameInput.value.trim(), tp = typeSelect.value;
+					if (!n) { nameWarn.style.display = 'none'; return; }
+					const exact = state.shows.find(s => s.name === n && s.type === tp);
+					const diff = state.shows.filter(s => s.name === n && s.type !== tp);
+					if (exact) {
+						nameWarn.innerHTML = '✅将更新已有剧集的观看进度（封面、备注等保持不变）';
+						nameWarn.style.cssText = 'display:block;margin-bottom:8px;font-size:0.75rem;color:#008b33;';
+					} else if (diff.length) {
+						nameWarn.innerHTML = `💡已有同名${diff.map(s => `「${escapeHTML(s.type)}」`).join('、')}，将作为不同版本独立存在`;
+						nameWarn.style.cssText = 'display:block;margin-bottom:8px;font-size:0.75rem;color:#d39803;';
+					} else { nameWarn.style.display = 'none'; }
+				};
+				nameInput.addEventListener('input', checkDup);
+				typeSelect.addEventListener('change', checkDup);
+				setTimeout(checkDup, 100);
+			}
+
+			// ── 模式B: 平台重名检测 ──
+			const pNameInput = panel.querySelector('#qr-p-name');
+			const pNameWarn = panel.querySelector('#qr-p-name-warning');
+			if (pNameInput && pNameWarn) {
+				const checkPlatDup = () => {
+					const n = pNameInput.value.trim();
+					if (!n) { pNameWarn.style.display = 'none'; return; }
+					const ex = state.platforms.find(p => p.name === n);
+					if (ex) {
+						pNameWarn.innerHTML = '⚠️该平台已存在，保存时将提示';
+						pNameWarn.style.cssText = 'display:block;margin-bottom:8px;font-size:0.75rem;color:#d31f1f;';
+					} else { pNameWarn.style.display = 'none'; }
+				};
+				pNameInput.addEventListener('input', checkPlatDup);
+				setTimeout(checkPlatDup, 100);
+			}
+
+			// ── 模式C: 网页重名检测 ──
+			const nTitleInput = panel.querySelector('#qr-n-title');
+			const nUrlInput = panel.querySelector('#qr-n-url');
+			const nNameWarn = panel.querySelector('#qr-n-name-warning');
+			if (nUrlInput && nNameWarn) {
+				const checkNavDup = () => {
+					const u = nUrlInput.value.trim();
+					if (!u) { nNameWarn.style.display = 'none'; return; }
+					try {
+						const host = new URL(u.startsWith('http') ? u : 'https://' + u).hostname;
+						const ex = state.navLinks.find(l => { try { return new URL(l.url).hostname === host; } catch { return false; } });
+						if (ex) {
+							nNameWarn.innerHTML = `💡已有同域名网页「${escapeHTML(ex.title)}」，将作为新条目共存`;
+							nNameWarn.style.cssText = 'display:block;margin-bottom:8px;font-size:0.75rem;color:#d39803;';
+						} else { nNameWarn.style.display = 'none'; }
+					} catch { nNameWarn.style.display = 'none'; }
+				};
+				nUrlInput.addEventListener('input', checkNavDup);
+				setTimeout(checkNavDup, 100);
+			}
+
+			// ── 底部按钮 ──
+			panel.querySelector('#qr-close').onclick = () => self.closeOverlay('quick-record');
+			panel.querySelector('#qr-cancel').onclick = () => self.closeOverlay('quick-record');
+			panel.querySelector('#qr-open-main').onclick = () => { self.closeOverlay('quick-record'); self.openMain(!isTouchDevice); };
+			panel.querySelector('#qr-reparse').onclick = () => {
+				const ac = panel.querySelector('#qr-auto-clean');
+				self.closeOverlay('quick-record');
+				setTimeout(() => self.openRecord(ac ? ac.checked : null), 300);
+			};
+
+			// ── 保存 ──
+			panel.querySelector('#qr-save').onclick = async () => {
+				if (currentMode === 'show') {
+					self._saveQuickShow(panel, rawData.showRaw);
+				} else if (currentMode === 'platform') {
+					await self._saveQuickPlatform(panel, rawData.platRaw);
+				} else if (currentMode === 'nav') {
+					self._saveQuickNav(panel, rawData.navRaw);
+				}
+			};
+
+			// 初始焦点
+			if (!isTouchDevice) {
+				const firstInput = panel.querySelector(`.qr-mode-panel[data-qrmode="${currentMode}"] input[type="text"], .qr-mode-panel[data-qrmode="${currentMode}"] input[type="number"]`);
+				if (firstInput) setTimeout(() => firstInput.focus(), 100);
+			}
+		},
+
+		/** 快速记录 - 保存剧集（模式A） */
+		_saveQuickShow(panel, d) {
+			const name = panel.querySelector('#e-name')?.value.trim();
+			if (!name) { toast('剧名不能为空'); return; }
+			const selectedType = panel.querySelector('#e-type')?.value || '';
+			const curEp = parseInt(panel.querySelector('#e-currep')?.value) || 1;
+			const totalEpVal = panel.querySelector('#e-total')?.value;
+			const latestEp = totalEpVal !== '' && totalEpVal !== undefined ? parseInt(totalEpVal) || null : null;
+			const coverVal = panel.querySelector('#e-cover')?.value.trim() || '';
+
+			const existing = state.shows.find(s => s.name === name && s.type === selectedType);
+			if (existing) {
+				existing.currentEpisode = Math.max(existing.currentEpisode || 0, curEp);
+				if (latestEp !== null) existing.latestEpisode = latestEp;
+				if (d.url) mergeShowLinks(existing, d.url, curEp);
+				if (coverVal) existing.coverUrl = coverVal;
+				existing.updatedAt = Date.now();
+				if (!Array.isArray(existing.history)) existing.history = [];
+				existing.history.push({ ep: curEp, ts: Date.now() });
+				saveData(); this.closeOverlay('quick-record'); this.renderShows();
+				toast(`✅ 已更新《${name}》至第${existing.currentEpisode}集`);
+			} else {
+				state.shows.unshift({
+					id: uid(), name, type: selectedType, currentEpisode: curEp,
+					latestEpisode: latestEp, status: 'watching', coverUrl: coverVal,
+					links: d.url ? [{ url: d.url, episode: curEp }] : [],
+					rating: 0, notes: '', schedule: 'unset',
+					history: [{ ep: curEp, ts: Date.now() }],
+					createdAt: Date.now(), updatedAt: Date.now(),
+				});
+				saveData(); this.closeOverlay('quick-record'); this.renderShows();
+				toast(`✅ 已添加《${name}》（${selectedType}）`);
+			}
+		},
+
+		/** 快速记录 - 保存平台（模式B） */
+		async _saveQuickPlatform(panel, d) {
+			const name = panel.querySelector('#qr-p-name')?.value.trim();
+			const urlInput = panel.querySelector('#qr-p-url');
+			let url = urlInput?.value.trim() || '';
+			// 从 protocol-input 组件中还原完整 URL
+			const protoWrap = urlInput?.closest('.proto-input-wrap');
+			if (protoWrap) {
+				const protoBtn = protoWrap.querySelector('.proto-switch');
+				if (protoBtn && url && !/^https?:\/\//i.test(url)) url = protoBtn.textContent + url;
+			}
+			const category = panel.querySelector('#qr-p-cat')?.value || 'mainstream';
+			if (!name || !url) { toast('名称和链接不能为空'); return; }
+			if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+			const existing = state.platforms.find(p => p.name === name);
+			if (existing) { toast(`平台"${name}"已存在`); return; }
+			let icon = d.icon || '';
+			if (!icon) { toast('正在自动获取图标…'); icon = await fetchFavicon(url); }
+			state.platforms.push({
+				id: uid(), name, category, url,
+				urls: [url], pinnedUrlIdx: 0, icon,
+				sortOrder: state.platforms.length,
+			});
+			savePlatforms(); this.closeOverlay('quick-record'); this.renderPlatforms();
+			toast(`✅ 已添加平台"${name}"`);
+		},
+
+		/** 快速记录 - 保存网页（模式C） */
+		_saveQuickNav(panel, d) {
+			const title = panel.querySelector('#qr-n-title')?.value.trim();
+			const urlInput = panel.querySelector('#qr-n-url');
+			let url = urlInput?.value.trim() || '';
+			const protoWrap = urlInput?.closest('.proto-input-wrap');
+			if (protoWrap) {
+				const protoBtn = protoWrap.querySelector('.proto-switch');
+				if (protoBtn && url && !/^https?:\/\//i.test(url)) url = protoBtn.textContent + url;
+			}
+			const desc = panel.querySelector('#qr-n-desc')?.value.trim() || '';
+			const cats = [...(panel.querySelector('#qr-n-cats')?.querySelectorAll('input:checked') || [])].map(cb => cb.value);
+			if (!title || !url) { toast('标题和URL不能为空'); return; }
+			if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+			if (!cats.length) { toast('请至少选择一个分类'); return; }
+			state.navLinks.push({
+				id: 'nl_' + Date.now() + Math.random().toString(36).slice(2, 6),
+				title, url, desc, icon: '', categories: cats,
+				order: Math.max(0, ...state.navLinks.map(l => l.order || 0)) + 1,
+			});
+			saveNavLinks(); this.closeOverlay('quick-record');
+			if (typeof this.renderNavLinks === 'function') this.renderNavLinks();
+			toast(`✅ 已添加「${title}」到网页导航`);
 		},
 
 		// ── 封面选择器弹窗 ──
@@ -6524,7 +7513,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="cb-row"><input type="checkbox" id="e-auto-clean" ${useClean ? 'checked' : ''}> 启用标题正则清洗</label>
+                        <label class="cb-row"><input type="checkbox" id="e-auto-clean" ${useClean ? 'checked' : ''}> 启用正则清洗</label>
                     </div>`;
 			}
 
@@ -7931,6 +8920,7 @@
 			if (!container) return;
 			const search = (panel.querySelector('#n-search')?.value || '').trim().toLowerCase();
 			const catId = state.navActiveCategory;
+			const navView = state.settings.navView || 'grid';
 
 			let links = catId === 'all'
 				? [...state.navLinks]
@@ -7956,18 +8946,20 @@
 				return;
 			}
 
-			const grid = document.createElement('div');
-			grid.className = 'nav-links-grid';
+			const wrap = document.createElement('div');
+			wrap.className = navView === 'grid' ? 'nav-links-grid' : 'nav-links-list';
 			links.forEach((link, idx) => {
-				const card = this.buildNavLinkCard(link, search, idx);
-				grid.appendChild(card);
+				const card = navView === 'grid'
+					? this.buildNavLinkCard(link, search, idx, panel)
+					: this.buildNavLinkListRow(link, search, idx, panel);
+				wrap.appendChild(card);
 			});
-			container.appendChild(grid);
+			container.appendChild(wrap);
 			this.updateNavFootInfo(panel, links.length);
 		},
 
-		/** 构建单个导航卡片 */
-		buildNavLinkCard(link, search, idx) {
+		/** 构建单个导航卡片（卡片视图） */
+		buildNavLinkCard(link, search, idx, panel) {
 			const card = document.createElement('div');
 			card.className = 'nav-link-card';
 			card.style.animationDelay = `${(idx || 0) * 20}ms`;
@@ -7998,20 +8990,25 @@
 				return cat ? `<span class="nav-link-cat-tag">${escapeHTML(cat.icon || '')}${escapeHTML(cat.name)}</span>` : '';
 			}).join('');
 
+			const isFav = (link.categories || []).includes('common');
+
 			card.innerHTML = `
-				<div class="card-hover-ops">
-					<button class="btn-icon accent-text" data-act="edit-link" title="编辑" >${I.edit}</button>
-					<button class="btn-icon" data-act="del-link" title="删除" style="color:#f87171;">${I.trash}</button>
-				</div>
-				<div style="display:flex;align-items:flex-start;gap:8px;">
+				<div class="nlc-top">
 					<div class="nav-link-icon">${iconHtml}</div>
-					<div style="flex:1;min-width:0;">
-						<div class="nav-link-title" data-tip="${escapeHTML(link.title)}">${highlightText(link.title, search)}</div>
-						<div class="nav-link-desc">${escapeHTML(link.desc || '暂无描述')}</div>
-						<div class="nav-link-cats">${catTags}</div>
+					<div class="nlc-info">
+						<div class="nav-link-title" data-tip="${escapeHTML(link.title)}" title="${escapeHTML(link.title)}">${highlightText(link.title, search)}</div>
+						<div class="nav-link-desc" data-tip="${escapeHTML(link.desc || '')}" title="${escapeHTML(link.desc || '')}">${escapeHTML(link.desc || '暂无描述')}</div>
 					</div>
 				</div>
-			`;
+				${catTags ? `<div class="nlc-cats">${catTags}</div>` : ''}
+				<div class="nlc-actions">
+					<button class="nlc-visit btn-icon" data-act="visit" title="在新标签页打开">${I.externalLink}</button>
+					<div class="nlc-ops">
+						<button class="btn-icon" data-act="fav" title="${isFav ? '取消常用' : '设为常用'}" style="${isFav ? 'color:var(--accent);' : 'color:var(--muted);'}">${isFav ? '★' : '☆'}</button>
+						<button class="btn-icon accent-text" data-act="edit-link" title="编辑">${I.edit}</button>
+						<button class="btn-icon" data-act="del-link" title="删除" style="color:#f87171;">${I.trash}</button>
+					</div>
+				</div>`;
 
 			// 点击操作
 			card.addEventListener('click', (e) => {
@@ -8019,14 +9016,124 @@
 				if (actBtn) {
 					e.stopPropagation();
 					const act = actBtn.dataset.act;
+					if (act === 'visit') { if (link.url) window.open(link.url, '_blank', 'noopener,noreferrer'); }
 					if (act === 'edit-link') this.openNavLinkEdit(link.id);
 					if (act === 'del-link') this.deleteNavLink(link.id);
+					if (act === 'fav') this._toggleNavFav(link, panel);
+					return;
+				}
+				// 卡片整体点击跳转
+				if (link.url) window.open(link.url, '_blank', 'noopener,noreferrer');
+			});
+
+			// 拖拽排序
+			this._bindNavDrag(card, link, panel, '.nav-link-card');
+			return card;
+		},
+
+		/** 构建单个导航列表行（列表视图） */
+		buildNavLinkListRow(link, search, idx, panel) {
+			const row = document.createElement('div');
+			row.className = 'nav-link-row';
+			row.dataset.linkId = link.id;
+
+			let hostname = '';
+			try { hostname = new URL(link.url).hostname; } catch { }
+
+			let iconHtml = '';
+			if (link.icon) {
+				if (/^(https?:|data:)/.test(link.icon)) {
+					iconHtml = `<img src="${escapeHTML(link.icon)}" alt="" onerror="this.parentElement.innerHTML='🌐'">`;
+				} else if (link.icon.includes('fa-')) {
+					iconHtml = `<i class="${escapeHTML(link.icon)} accent-text"></i>`;
+				} else {
+					iconHtml = escapeHTML(link.icon);
+				}
+			} else if (hostname) {
+				iconHtml = `<img src="https://favicon.im/zh/${hostname}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='🌐'">`;
+			} else {
+				iconHtml = '🌐';
+			}
+
+			const catTags = (link.categories || []).map(cid => {
+				const cat = state.navCategories.find(c => c.id === cid);
+				return cat ? `<span class="nav-link-cat-tag">${escapeHTML(cat.icon || '')}${escapeHTML(cat.name)}</span>` : '';
+			}).join('');
+
+			const isFav = (link.categories || []).includes('common');
+
+			row.innerHTML = `
+				<div class="nav-link-icon">${iconHtml}</div>
+				<div class="nlr-info">
+					<div class="nav-link-title" title="${escapeHTML(link.title)}">${highlightText(link.title, search)}</div>
+					<div class="nav-link-desc" title="${escapeHTML(link.desc || '')}">${escapeHTML(link.desc || '暂无描述')}</div>
+				</div>
+				<div class="nlr-cats">${catTags}</div>
+				<div class="nlr-ops">
+					<button class="btn-icon" data-act="fav" title="${isFav ? '取消常用' : '设为常用'}" style="${isFav ? 'color:var(--accent);' : 'color:var(--muted);'}">${isFav ? '★' : '☆'}</button>
+					<button class="btn-icon accent-text" data-act="edit-link" title="编辑">${I.edit}</button>
+					<button class="btn-icon" data-act="del-link" title="删除" style="color:#f87171;">${I.trash}</button>
+				</div>`;
+
+			row.addEventListener('click', (e) => {
+				const actBtn = e.target.closest('[data-act]');
+				if (actBtn) {
+					e.stopPropagation();
+					const act = actBtn.dataset.act;
+					if (act === 'edit-link') this.openNavLinkEdit(link.id);
+					if (act === 'del-link') this.deleteNavLink(link.id);
+					if (act === 'fav') this._toggleNavFav(link, panel);
 					return;
 				}
 				if (link.url) window.open(link.url, '_blank', 'noopener,noreferrer');
 			});
 
-			return card;
+			this._bindNavDrag(row, link, panel, '.nav-link-row');
+			return row;
+		},
+
+		/** 切换常用分类 */
+		_toggleNavFav(link, panel) {
+			const cats = link.categories || [];
+			const idx = cats.indexOf('common');
+			if (idx >= 0) cats.splice(idx, 1);
+			else cats.push('common');
+			link.categories = cats;
+			saveNavLinks();
+			this.renderNavLinks(panel);
+		},
+
+		/** 绑定导航卡片拖拽排序 */
+		_bindNavDrag(el, link, panel, selector) {
+			el.draggable = true;
+			el.addEventListener('dragstart', e => {
+				this._navDragSrc = el;
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/plain', link.id);
+				el.style.opacity = '0.4';
+			});
+			el.addEventListener('dragend', () => {
+				el.style.opacity = '';
+				const container = el.parentElement;
+				if (container) container.querySelectorAll(selector).forEach(c => c.classList.remove('drag-over'));
+				this._navDragSrc = null;
+			});
+			el.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.classList.add('drag-over'); });
+			el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+			el.addEventListener('drop', e => {
+				e.preventDefault(); el.classList.remove('drag-over');
+				if (this._navDragSrc && this._navDragSrc !== el) {
+					const srcId = e.dataTransfer.getData('text/plain');
+					const si = state.navLinks.findIndex(x => x.id === srcId);
+					const ti = state.navLinks.findIndex(x => x.id === link.id);
+					if (si !== -1 && ti !== -1) {
+						const [moved] = state.navLinks.splice(si, 1);
+						state.navLinks.splice(ti, 0, moved);
+						state.navLinks.forEach((item, i) => item.order = i);
+						saveNavLinks(); this.renderNavLinks(panel);
+					}
+				}
+			});
 		},
 
 		/** 更新底部信息 */
@@ -9080,10 +10187,29 @@
 								<!-- 快速记录选项 -->
 								<div class="settings-card">
 									<div class="settings-card-title">${I.edit} 快速记录选项</div>
-									<label class="cb-row"><input type="checkbox" id="s-auto-clean" ${state.settings.autoCleanTitle !== false ? 'checked' : ''}> 默认启用标题正则清洗</label>
+									<div class="form-group">
+										<label class="form-label">默认模式</label>
+										<select id="s-qr-mode" class="filter-select">
+											<option value="show" ${state.settings.quickRecordMode === 'show' ? 'selected' : ''}>📺 记录剧集</option>
+											<option value="platform" ${state.settings.quickRecordMode === 'platform' ? 'selected' : ''}>📡 记录平台</option>
+											<option value="nav" ${state.settings.quickRecordMode === 'nav' ? 'selected' : ''}>🌐 记录网页</option>
+										</select>
+									</div>
+									<label class="cb-row"><input type="checkbox" id="s-auto-clean" ${state.settings.autoCleanTitle !== false ? 'checked' : ''}> 默认启用正则清洗</label>
 									<p class="muted-sm">去除页面标题中的网站后缀、广告词等干扰字符。</p>
 									<label class="cb-row" style="margin-top:10px;"><input type="checkbox" id="s-enable-reminder" ${state.settings.enableReminder !== false ? 'checked' : ''}> 启用追剧更新提醒</label>
 									<p class="muted-sm">在追剧周期日自动弹出系统通知提醒更新。</p>
+								</div>
+								<!-- 网页导航搜索设置 -->
+								<div class="settings-card">
+									<div class="settings-card-title">${I.compass} 网页导航搜索</div>
+									<label class="cb-row"><input type="checkbox" id="s-nav-history" ${state.settings.navHistoryEnabled !== false ? 'checked' : ''}> 启用搜索历史</label>
+									<p class="muted-sm">聚焦搜索栏时显示历史搜索记录，支持逐条删除和清空。</p>
+									<div class="form-group" style="margin-top:10px;">
+										<label class="form-label">最大历史保留条数：<strong id="s-max-hist-val">${state.settings.maxSearchHistory ?? 10}</strong></label>
+										<input type="range" id="s-max-hist" min="0" max="50" step="1" value="${state.settings.maxSearchHistory ?? 10}" style="width:100%;accent-color:var(--accent);">
+										<p class="muted-sm">设为 0 则不保留搜索历史。</p>
+									</div>
 								</div>
 								<div class="settings-card">
 									<div class="settings-card-title">${I.zap} 快捷键配置</div>
@@ -9120,7 +10246,7 @@
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="form-label">笔记</label>
+										<label class="form-label">笔记便签</label>
 										<div class="input-row">
 											<input type="text" id="s-hotkey-notes" value="${draft.hotkeys.notes || ''}" readonly class="flex-1">
 											<button class="btn btn-ghost nowrap" id="s-hotkey-notes-capture" >${I.edit} 捕获</button>
@@ -9157,6 +10283,9 @@
 											<option value="lt">左侧顶部</option><option value="lm">左侧中部</option><option value="lb">左侧底部</option>
 											<option value="rt">右侧顶部</option><option value="rm">右侧中部</option><option value="rb">右侧底部</option>
 										</select>
+									</div>
+									<div class="form-group">
+										<label class="cb-row"><input type="checkbox" id="s-hide-ball-panel" ${state.settings.hideBallOnPanel !== false ? 'checked' : ''}> 打开面板时隐藏悬浮球</label>
 									</div>
 									<div class="form-group">
 										<div class="slider-row">
@@ -9271,6 +10400,8 @@
 										<button class="btn btn-ghost btn-full" id="s-import" >${I.download} 导入数据</button>
 									</div>
 									<button class="btn btn-danger" id="s-reset" style="width:100%;justify-content:center;">${I.undo} 数据重置</button>
+									<button class="btn btn-factory" id="s-factory-reset" style="width:100%;justify-content:center;margin-top:8px;">⚠ 恢复初始状态</button>
+									<div style="font-size:calc(var(--font-size)*0.714);color:var(--muted);margin-top:6px;text-align:center;">清除所有数据并恢复为初次安装状态（含设置、面板顺序等）</div>
 								</div>
 								<div class="settings-card">
 									<div class="about-section">
@@ -9366,6 +10497,28 @@
 				}
 			}
 
+			// 移动端：设置页左右滑动切换 section
+			(() => {
+				const content = panel.querySelector('#s-content');
+				if (!content || window.innerWidth > 480) return;
+				const navItemsArr = [...navItems];
+				let startX = 0, startY = 0;
+				content.addEventListener('touchstart', e => {
+					startX = e.touches[0].clientX;
+					startY = e.touches[0].clientY;
+				}, { passive: true });
+				content.addEventListener('touchend', e => {
+					const dx = e.changedTouches[0].clientX - startX;
+					const dy = e.changedTouches[0].clientY - startY;
+					if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+					const curIdx = navItemsArr.findIndex(n => n.classList.contains('active'));
+					const nextIdx = dx < 0
+						? Math.min(curIdx + 1, navItemsArr.length - 1)
+						: Math.max(curIdx - 1, 0);
+					if (nextIdx !== curIdx) navItemsArr[nextIdx].click();
+				}, { passive: true });
+			})();
+
 			// 主题色块渲染
 			const renderSwatches = () => {
 				['dark', 'light'].forEach(group => {
@@ -9413,6 +10566,13 @@
 				draft.ui.platformIconRadius = val; state.settings.ui.platformIconRadius = val;
 				panel.querySelector('#s-icon-radius-val').textContent = val + 'px'; App.applyTheme();
 			};
+
+			// 最大搜索历史条数
+			const maxHistInput = panel.querySelector('#s-max-hist');
+			const maxHistVal = panel.querySelector('#s-max-hist-val');
+			if (maxHistInput && maxHistVal) {
+				maxHistInput.oninput = () => { maxHistVal.textContent = maxHistInput.value; };
+			}
 
 			// 面板尺寸调节
 			panel.querySelector('#s-tune-main').onclick = () => { App.closeOverlay('settings'); App.openMain(); App.showTunerBar('main'); };
@@ -9762,11 +10922,15 @@
 					blacklist: listMode === 'black' ? domains : [],
 					whitelist: listMode === 'white' ? domains : [],
 					enableBall: panel.querySelector('#s-ball').checked,
+					hideBallOnPanel: panel.querySelector('#s-hide-ball-panel').checked,
 					clickMode: panel.querySelector('input[name="click-mode"]:checked')?.value || 'single-main',
 					defaultTab: finalDefaultTab,
 					tabOrder: fullTabOrder.length ? fullTabOrder : ['records', 'platforms', 'navlinks', 'notes'],
 					enabledTabs: enabledTabs.length ? enabledTabs : ['records', 'platforms', 'navlinks', 'notes'],
 					autoCleanTitle: panel.querySelector('#s-auto-clean').checked,
+					quickRecordMode: panel.querySelector('#s-qr-mode')?.value || 'show',
+					navHistoryEnabled: panel.querySelector('#s-nav-history')?.checked ?? true,
+					maxSearchHistory: parseInt(panel.querySelector('#s-max-hist')?.value) || 10,
 					enableReminder: panel.querySelector('#s-enable-reminder').checked,
 					hotkeys: finalHotkeys,
 					ui: { ...state.settings.ui, ...draft.ui, fontSize: finalFontSize, mainHeightAuto: finalHeightAuto, mainHeightMin: finalHeightMin, mainHeightMax: finalHeightMax },
@@ -9807,14 +10971,14 @@
 						<button class="btn-icon" id="sr-close">${I.x}</button>
 					</div>
 					<div class="panel-body pad-lg" >
-						<p style="font-size:calc(var(--font-size)*0.929);color:var(--text);margin-bottom:14px;">选择要重置的数据模块（勾选的将被清除）：</p>
+						<div style="display:flex;align-items:center;margin-bottom:14px;"><span style="font-size:calc(var(--font-size)*0.929);color:var(--text);">选择要重置的模块（勾选的将被清除）：</span><button class="btn-icon" id="sr-toggle-all" style="margin-left:auto;font-size:calc(var(--font-size)*0.786);color:var(--accent);cursor:pointer;">全选</button></div>
 						<div class="stack">
 							<label class="cb-row"><input type="checkbox" id="sr-settings" checked> 自定义设置（主题、字体、外观布局、悬浮球等）</label>
 							<label class="cb-row"><input type="checkbox" id="sr-webdav" checked> WebDAV 配置（服务器地址、用户名、密码）</label>
 							<label class="cb-row"><input type="checkbox" id="sr-shows" checked> 观影记录（${state.shows.length} 部剧集）</label>
 							<label class="cb-row"><input type="checkbox" id="sr-platforms" checked> 观影平台（${state.platforms.length} 个平台）</label>
 							<label class="cb-row"><input type="checkbox" id="sr-nav" checked> 网页导航（${state.navLinks.length} 个网页）</label>
-							<label class="cb-row"><input type="checkbox" id="sr-notes" checked> 笔记（${state.notes.length} 篇笔记）</label>
+							<label class="cb-row"><input type="checkbox" id="sr-notes" checked> 笔记便签（${state.notes.length} 篇笔记）</label>
 							<label class="cb-row"><input type="checkbox" id="sr-timer" checked> 计时器/日历</label>
 						</div>
 					</div>
@@ -9827,14 +10991,21 @@
 				const close = () => this.closeOverlay('selective-reset');
 				resetPanel.querySelector('#sr-close').onclick = close;
 				resetPanel.querySelector('#sr-cancel').onclick = close;
+				// 全选/取消全选
+				resetPanel.querySelector('#sr-toggle-all').onclick = () => {
+					const cbs = resetPanel.querySelectorAll('.stack input[type="checkbox"]');
+					const allChecked = [...cbs].every(cb => cb.checked);
+					cbs.forEach(cb => cb.checked = !allChecked);
+					resetPanel.querySelector('#sr-toggle-all').textContent = allChecked ? '全选' : '取消全选';
+				};
 				resetPanel.querySelector('#sr-confirm').onclick = () => {
 					const items = [];
 					if (resetPanel.querySelector('#sr-settings').checked) { GM_setValue(KEY_SETTINGS, null); items.push('设置'); }
 					if (resetPanel.querySelector('#sr-webdav').checked) { GM_setValue(KEY_WEBDAV, null); items.push('WebDAV'); }
 					if (resetPanel.querySelector('#sr-shows').checked) { GM_setValue(KEY_DATA, []); items.push('观影记录'); }
 					if (resetPanel.querySelector('#sr-platforms').checked) { GM_setValue(KEY_PLATFORMS, null); GM_setValue(KEY_PLATFORM_CATS, null); items.push('观影平台'); }
-					if (resetPanel.querySelector('#sr-nav').checked) { GM_setValue(KEY_NAV_CATS, null); GM_setValue(KEY_NAV_LINKS, null); GM_setValue(KEY_NAV_ENGINES, null); items.push('网页导航'); }
-					if (resetPanel.querySelector('#sr-notes').checked) { GM_setValue(KEY_NOTES, null); items.push('笔记'); }
+					if (resetPanel.querySelector('#sr-nav').checked) { GM_setValue(KEY_NAV_CATS, null); GM_setValue(KEY_NAV_LINKS, null); GM_setValue(KEY_NAV_ENGINES, null); GM_setValue(KEY_SEARCH_HISTORY, null); items.push('网页导航'); }
+					if (resetPanel.querySelector('#sr-notes').checked) { GM_setValue(KEY_NOTES, null); items.push('笔记便签'); }
 				if (resetPanel.querySelector('#sr-timer').checked) { GM_setValue(KEY_TIMER, null); GM_setValue(KEY_TODOS, null); GM_setValue(KEY_MARKS, null); items.push('计时器/日历/待办'); }
 					if (!items.length) { toast('请至少选择一项'); return; }
 					if (!confirm(`将重置以下模块：${items.join('、')}\n\n此操作不可恢复，确定？`)) return;
@@ -9844,6 +11015,41 @@
 			};
 
 			// ----- WebDAV 配置加载与事件绑定 -----
+
+			// 恢复初始状态：5 秒内可撤销，超时后用默认值覆盖并重载
+			panel.querySelector('#s-factory-reset').onclick = () => {
+				if (!confirm('⚠️ 此操作将清除所有数据并恢复为初次安装状态（包括设置、面板顺序、所有内容）。\n\n是否继续？')) return;
+				const allKeys = [KEY_DATA, KEY_SETTINGS, KEY_PLATFORMS, KEY_PLATFORM_CATS, KEY_NAV_CATS, KEY_NAV_LINKS, KEY_NAV_ENGINES, KEY_NOTES, KEY_TIMER, KEY_TODOS, KEY_MARKS, KEY_QUOTE, KEY_SEARCH_HISTORY, KEY_WEBDAV];
+				const snapshot = {};
+				allKeys.forEach(k => { snapshot[k] = GM_getValue(k); });
+				const committed = { value: false };
+				try {
+					showUndoToast('已恢复初始状态，5 秒后生效', () => {
+						committed.value = true;
+						Object.entries(snapshot).forEach(([k, v]) => { GM_setValue(k, v); });
+						toast('已撤销，数据已恢复');
+					}, 5000);
+				} catch (e) { console.error('[Omni Trail] toast error:', e); }
+				setTimeout(() => {
+					if (committed.value) return;
+					GM_setValue(KEY_SETTINGS, DEFAULT_SETTINGS);
+					GM_setValue(KEY_DATA, []);
+					GM_setValue(KEY_PLATFORMS, []);
+					GM_setValue(KEY_PLATFORM_CATS, []);
+					GM_setValue(KEY_NAV_CATS, [...DEFAULT_NAV_CATEGORIES]);
+					GM_setValue(KEY_NAV_LINKS, []);
+					GM_setValue(KEY_NAV_ENGINES, [...DEFAULT_NAV_ENGINES]);
+					GM_setValue(KEY_NOTES, []);
+					GM_setValue(KEY_TIMER, {});
+					GM_setValue(KEY_TODOS, {});
+					GM_setValue(KEY_MARKS, {});
+					GM_setValue(KEY_QUOTE, {});
+					GM_setValue(KEY_SEARCH_HISTORY, []);
+					GM_setValue(KEY_WEBDAV, {});
+					location.reload();
+				}, 5200);
+			};
+
 			const webdavCfg = getWebDAVConfig();
 			const serverInput = panel.querySelector('#webdav-server');
 			const usernameInput = panel.querySelector('#webdav-username');
@@ -9994,15 +11200,15 @@
 					<button class="btn-icon" id="exp-close">${I.x}</button>
 				</div>
 				<div class="panel-body pad-lg" >
-					<p style="font-size:calc(var(--font-size) * 0.929);color:var(--text);margin-bottom:14px;">选择要导出的数据范围：</p>
+					<div style="display:flex;align-items:center;margin-bottom:14px;"><span style="font-size:calc(var(--font-size) * 0.929);color:var(--text);">选择要导出的数据范围：</span><button class="btn-icon" id="exp-toggle-all" style="margin-left:auto;font-size:calc(var(--font-size)*0.786);color:var(--accent);cursor:pointer;">全选</button></div>
 					<div class="stack">
 						<label class="cb-row"><input type="checkbox" id="exp-settings" checked> 主题与设置（主题、字体、快捷键、悬浮球等）</label>
 						<label class="cb-row"><input type="checkbox" id="exp-shows" checked> 观看记录（${state.shows.length} 部剧集）</label>
 						<label class="cb-row"><input type="checkbox" id="exp-platforms" checked> 观影平台（${state.platforms.length} 个平台）</label>
 						<label class="cb-row"><input type="checkbox" id="exp-nav" checked> 网页导航（${state.navLinks.length} 个网页）</label>
-					<label class="cb-row"><input type="checkbox" id="exp-notes" checked> 笔记（${state.notes.length} 篇）</label>
-					<label class="cb-row"><input type="checkbox" id="exp-todos" checked> 待办事项（${Object.values(state.todos).reduce((s,a) => s + a.length, 0)} 条）</label>
-					<label class="cb-row"><input type="checkbox" id="exp-marks" checked> 日期标注（${Object.values(state.marks).reduce((s,a) => s + a.length, 0)} 条）</label>
+					<label class="cb-row"><input type="checkbox" id="exp-notes" checked> 笔记便签（${state.notes.length} 篇笔记）</label>
+					<label class="cb-row"><input type="checkbox" id="exp-todos" checked> 待办事项（${Object.values(state.todos).reduce((s,a) => s + a.length, 0)} 条待办）</label>
+					<label class="cb-row"><input type="checkbox" id="exp-marks" checked> 日期标注（${Object.values(state.marks).reduce((s,a) => s + a.length, 0)} 条标注）</label>
 					</div>
 				</div>
 				<div class="panel-foot">
@@ -10014,6 +11220,13 @@
 			const close = () => this.closeOverlay('export-dialog');
 			panel.querySelector('#exp-close').onclick = close;
 			panel.querySelector('#exp-cancel').onclick = close;
+			// 全选/取消全选
+			panel.querySelector('#exp-toggle-all').onclick = () => {
+				const cbs = panel.querySelectorAll('.stack input[type="checkbox"]');
+				const allChecked = [...cbs].every(cb => cb.checked);
+				cbs.forEach(cb => cb.checked = !allChecked);
+				panel.querySelector('#exp-toggle-all').textContent = allChecked ? '全选' : '取消全选';
+			};
 			panel.querySelector('#exp-do').onclick = () => {
 				const opts = {
 					settings: panel.querySelector('#exp-settings').checked,
@@ -10118,6 +11331,10 @@
 					if (!state.navEngines.find(e => e.id === eng.id)) state.navEngines.push({ ...eng });
 				});
 			}
+			if (opts.nav !== false && imported.searchHistory && imported.searchHistory.length) {
+				const existingSet = new Set(state.searchHistory);
+				imported.searchHistory.forEach(q => { if (!existingSet.has(q)) { state.searchHistory.push(q); existingSet.add(q); } });
+			}
 			if (opts.notes !== false && imported.notes && imported.notes.length) {
 				imported.notes.forEach(note => {
 					if (!state.notes.find(n => n.id === note.id || (n.title === note.title && n.content === note.content))) state.notes.push({ ...note });
@@ -10148,6 +11365,7 @@
 								navCategories: imported.navCategories || null,
 								navLinks: imported.navLinks || null,
 								navEngines: imported.navEngines || null,
+								searchHistory: imported.searchHistory || null,
 								notes: imported.notes || null,
 								timer: imported.timer || null,
 								todos: imported.todos || null,
@@ -10219,13 +11437,13 @@
                 </div>
                 <div class="panel-body pad-lg" >
                     ${description}
-                    <p style="font-size:calc(var(--font-size) * 0.857);color:var(--muted);margin-bottom:10px;">选择要导入的数据范围：</p>
+                    <div style="display:flex;align-items:center;margin-bottom:10px;"><span style="font-size:calc(var(--font-size) * 0.857);color:var(--muted);">选择要导入的数据范围：</span><button class="btn-icon" id="imp-toggle-all" style="margin-left:auto;font-size:calc(var(--font-size)*0.786);color:var(--accent);cursor:pointer;">全选</button></div>
                     <div class="stack">
                         ${hasSettings ? `<label class="cb-row"><input type="checkbox" id="imp-include-settings" checked> 主题与设置（主题、字体、快捷键等）</label>` : ''}
                         ${showCount > 0 ? `<label class="cb-row"><input type="checkbox" id="imp-include-shows" checked> 观看记录（${showCount} 部剧集）</label>` : ''}
                         ${platCount > 0 ? `<label class="cb-row"><input type="checkbox" id="imp-include-platforms" checked> 观影平台（${platCount} 个平台）</label>` : ''}
                         ${navLinkCount > 0 ? `<label class="cb-row"><input type="checkbox" id="imp-include-nav" checked> 网页导航（${navLinkCount} 个网页）</label>` : ''}
-                        ${notesCount > 0 ? `<label class="cb-row"><input type="checkbox" id="imp-include-notes" checked> 笔记（${notesCount} 篇）</label>` : ''}
+                        ${notesCount > 0 ? `<label class="cb-row"><input type="checkbox" id="imp-include-notes" checked> 笔记便签（${notesCount} 篇笔记）</label>` : ''}
                         ${(imported.todos && Object.keys(imported.todos).length > 0) ? `<label class="cb-row"><input type="checkbox" id="imp-include-todos" checked> 待办事项（${Object.values(imported.todos).reduce((s,a) => s + a.length, 0)} 条）</label>` : ''}
                         ${(imported.marks && Object.keys(imported.marks).length > 0) ? `<label class="cb-row"><input type="checkbox" id="imp-include-marks" checked> 日期标注（${Object.values(imported.marks).reduce((s,a) => s + a.length, 0)} 条）</label>` : ''}
                     </div>
@@ -10247,6 +11465,13 @@
 
 			panel.querySelector('#imp-close').onclick = () => this.closeOverlay('import-dialog');
 			panel.querySelector('#imp-cancel').onclick = () => this.closeOverlay('import-dialog');
+			// 全选/取消全选
+			panel.querySelector('#imp-toggle-all').onclick = () => {
+				const cbs = panel.querySelectorAll('.stack input[type="checkbox"]');
+				const allChecked = [...cbs].every(cb => cb.checked);
+				cbs.forEach(cb => cb.checked = !allChecked);
+				panel.querySelector('#imp-toggle-all').textContent = allChecked ? '全选' : '取消全选';
+			};
 
 			panel.querySelector('#imp-overwrite').onclick = () => {
 				if (!confirm('⚠️ 覆盖会丢失所选范围的当前数据，确定吗？')) return;
@@ -10268,11 +11493,12 @@
 				if (getIncludeNav() && imported.navCategories) state.navCategories = imported.navCategories;
 				if (getIncludeNav() && imported.navLinks) state.navLinks = imported.navLinks;
 				if (getIncludeNav() && imported.navEngines) state.navEngines = imported.navEngines;
+				if (getIncludeNav() && imported.searchHistory) state.searchHistory = imported.searchHistory;
 				if (getIncludeNotes() && imported.notes) state.notes = imported.notes;
 				if (getIncludeTodos() && imported.todos) state.todos = imported.todos;
 				if (getIncludeMarks() && imported.marks) state.marks = imported.marks;
 				if (getIncludeSettings() && imported.settings) state.settings = deepMerge(DEFAULT_SETTINGS, imported.settings);
-				ensureDefaults(); saveData(); saveSettings(); savePlatforms(); savePlatformCategories(); saveNavCategories(); saveNavLinks(); saveNavEngines(); saveNotes(); saveTimer(); saveTodos(); saveMarks();
+				ensureDefaults(); saveData(); saveSettings(); savePlatforms(); savePlatformCategories(); saveNavCategories(); saveNavLinks(); saveNavEngines(); saveSearchHistory(); saveNotes(); saveTimer(); saveTodos(); saveMarks();
 				this.applyTheme(); this.renderShows();
 				const mainPanel = this.overlays.main?.querySelector('.panel');
 				if (mainPanel) { this.renderPlatforms(mainPanel); this.renderNavCategories(mainPanel); this.renderNavLinks(mainPanel); }
@@ -10407,6 +11633,9 @@
 					const mainPanel = this.overlays.main?.querySelector('.panel');
 					if (mainPanel) this.renderNavEngines(mainPanel);
 				}
+			});
+			GM_addValueChangeListener(KEY_SEARCH_HISTORY, (name, oldV, newV, remote) => {
+				if (remote && newV) state.searchHistory = newV;
 			});
 			GM_addValueChangeListener(KEY_NOTES, (name, oldV, newV, remote) => {
 				if (remote && newV) {
